@@ -71,16 +71,10 @@ func (a *App) ensureDemoUser(ctx context.Context, email, role, name string) (str
 	return id, nil
 }
 
-// seedDemo inserts ~25 clearly flagged (is_demo=1) observations through the normal service paths
-// (validation, state machine, history, audit, notifications). It does nothing when demo rows exist.
+// seedDemo inserts clearly flagged (is_demo=1) observations through the normal service paths
+// (validation, state machine, history, audit, notifications). Stable client refs let newer seed entries
+// be added to an existing demo database without duplicating or resetting old records.
 func (a *App) seedDemo(ctx context.Context) error {
-	var n int
-	if err := a.db.QueryRowContext(ctx, `SELECT count(*) FROM observations WHERE is_demo = 1`).Scan(&n); err != nil {
-		return err
-	}
-	if n > 0 {
-		return nil
-	}
 	var doc struct {
 		Observations []demoItem `json:"observations"`
 	}
@@ -125,13 +119,21 @@ func (a *App) seedDemo(ctx context.Context) error {
 			return fmt.Errorf("demo seed: unknown district %q", it.District)
 		}
 		lon, lat := pointInside(g, rng)
+		var exists int
+		clientRef := fmt.Sprintf("demo-seed-%03d", i+1)
+		if err := a.db.QueryRowContext(ctx, `SELECT count(*) FROM observations WHERE user_id=? AND client_ref=?`, citizenID, clientRef).Scan(&exists); err != nil {
+			return err
+		}
+		if exists > 0 {
+			continue
+		}
 		details, _ := json.Marshal(it.Details)
 		count := it.Count
 		in := observations.CreateInput{
 			RecordType: it.RecordType, Category: it.Category, Title: it.Title, Description: it.Description,
 			SpeciesGuess: it.SpeciesGuess, CountObserved: &count, Details: details, Lat: &lat, Lon: &lon,
 			LocationSource: "manual", ObservedAt: now.AddDate(0, 0, -it.DaysAgo).Add(-time.Duration(i) * time.Hour).Format(time.RFC3339),
-			ClientRef: fmt.Sprintf("demo-seed-%03d", i+1),
+			ClientRef: clientRef,
 		}
 		obs, _, err := a.deps.Observations.Create(ctx, citizen, cActor, in, observations.CreateOptions{Demo: true})
 		if err != nil {

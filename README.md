@@ -1,4 +1,6 @@
-# Eco Terminal
+# Bio Radar
+
+**Yerel sunum:** `./run.sh` API’yi ve Linux uygulamasını birlikte açar; 30 açıkça etiketli demo kayıt kullanır. Giriş bilgileri terminalde gösterilir. `./run.sh --api-only` yalnız API’yi başlatır.
 
 Ecological intelligence & decision-support platform for **Kastamonu, Türkiye**: citizens record wildlife / plant / water / forest / pollution
 observations with photo + location → AI suggests (never verifies) → reviewers verify → everything is shown on a map, queryable through a

@@ -223,7 +223,7 @@ func TestDemoSeed(t *testing.T) {
 	e := newEnv(t, func(c *config.Config) { c.SeedDemo = true })
 	var total, demo int
 	e.db.QueryRow(`SELECT count(*), COALESCE(SUM(is_demo),0) FROM observations`).Scan(&total, &demo)
-	if total != 25 || demo != 25 {
+	if total != 30 || demo != 30 {
 		t.Fatalf("demo observations: total=%d demo=%d", total, demo)
 	}
 	statuses := map[string]int{}
@@ -266,8 +266,25 @@ func TestDemoSeed(t *testing.T) {
 		t.Fatal(err)
 	}
 	e.db.QueryRow(`SELECT count(*) FROM observations`).Scan(&total)
-	if total != 25 {
+	if total != 30 {
 		t.Fatalf("re-seed duplicated records: %d", total)
+	}
+	// Simulate upgrading the older 25-record demo database. Preserve edited old
+	// records while adding only the five new presentation client refs.
+	if _, err := e.db.Exec(`DELETE FROM observations WHERE client_ref IN ('demo-seed-026','demo-seed-027','demo-seed-028','demo-seed-029','demo-seed-030')`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.db.Exec(`UPDATE observations SET title='Preserved demo edit' WHERE client_ref='demo-seed-001'`); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.app.Bootstrap(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	e.db.QueryRow(`SELECT count(*) FROM observations`).Scan(&total)
+	var preserved int
+	e.db.QueryRow(`SELECT count(*) FROM observations WHERE client_ref='demo-seed-001' AND title='Preserved demo edit'`).Scan(&preserved)
+	if total != 30 || preserved != 1 {
+		t.Fatalf("incremental demo seed: total=%d preserved=%d", total, preserved)
 	}
 	// both copies of the embedded datasets are identical to the files under datasets/
 	for _, p := range [][2]string{
