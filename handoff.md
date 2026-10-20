@@ -44,6 +44,11 @@ should never have to reconstruct "what was I doing" from git log alone.
 > B'nin açık işleri: fontlar (Fraunces/Atkinson Hyperlegible/IBM Plex Mono) bundle EDİLMEDİ (assets/fonts + pubspec + ğĞşŞıİöçü kontrolü); `flutter build web` sonucu okunmadı; gerçek backend ile çalıştırıp 3 genişlikte görsel kontrol. Eklenti noktaları: `apps/flutter_app/lib/app_extensions.dart` (`registerPanelTab`, `registerRoute`, `registerMapOverlay`), ayrıntı `docs/architecture/flutter.md`.
 > Sözleşme belirsizlikleri (B): PATCH /auth/me `consent_location` vs User `location_consent`; /regions/{id}/observations'ta `status` filtresi yok; liste sıralaması belirsiz; tek `category` filtresi. Hâlâ yapılacak: E2 (simülasyon handler), D2 (AI/RSS handler), C, F, Faz 3 — yukarıdaki sıra geçerli.
 
+> **GÜNCELLEME 2:** E2 (simülasyon HTTP katmanı) **main'e MERGE EDİLDİ** (`merge: simulation HTTP handlers...`). Lead doğrulaması: `make vet` temiz, `make test` (-race) tüm paketler `ok` (tests/ 11.5s, yeni TestSimulationHTTP dahil).
+> Eklenenler: `/simulations/run|list|{id}|compare`, public `/environment/measurements`, başlangıçta il iklim verisini hazırlayan worker, `ECO_CLIMATE_SNAPSHOT`, OpenAPI eklemeleri (`scale`, `model`, `region_id`, `coverage`, `attribution`, compare).
+> E2'nin yapmadığı: canlı sunucuda gerçek `POST /simulations/run` denemesi (il, −20/+2), il centroid'inin snapshot ERA5 hücresine düştüğünün kontrolü (düşmezse ilk istek "veri hazırlanıyor" insufficient_data döner), SIMULATION.md'ye HTTP bölümü. Explainer şimdilik nil (`newSimulationModule(d, simulation.WithExplainer(x))`).
+> **Kalan sıra:** (1) B'yi yeniden doğrula (flutter analyze/test/build linux) + fontları gömme; (2) D2: AI/RSS handler'ları + jobs/rss worker'ları `extensions.go`'ya; (3) C ajanı (sihirbaz + offline kuyruk + uzman paneli); (4) F ajanı (AI/Resmî/Simülasyon UI); (5) Faz 3 (e2e, README/DEMO/DATA_SOURCES, final rapor).
+
 # Handoff — 2026-10-20 (Session 2b) — KOTA DURDURMASI: nereden devam edilecek
 
 ## Durum (kota bitti, hesap değişecek)
