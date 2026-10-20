@@ -25,7 +25,7 @@ Toolchain: Go 1.27.1, Flutter 3.44.6 / Dart 3.12.2, gcc. Verifiable here: backen
 - [x] `docs/api/openapi.yaml`, `docs/architecture/ARCHITECTURE.md`, `.env.example`, AGENTS.md filled in
 - [x] README, `docs/DATABASE.md`, first commits pushed
 
-### Phase 1 — parallel agents (own git worktrees/branches) — IN PROGRESS
+### Phase 1 — parallel agents (own git worktrees/branches) — DONE
 
 ### Ajan → branch → iş eşlemesi
 
@@ -39,19 +39,21 @@ Toolchain: Go 1.27.1, Flutter 3.44.6 / Dart 3.12.2, gcc. Verifiable here: backen
 `main`: yalnızca lead (ben) çalışıyor; ajan branch'leri bitince sırayla `main`'e merge edilir. Planlanan sonraki ajanlar: **D2** (AI/RSS handler'ları), **E2** (simülasyon handler'ları), **C** (gözlem sihirbazı + offline kuyruk + uzman paneli), **F** (AI/Resmî/Simülasyon arayüzleri).
 
 - [x] **A backend-core (merged cde7e97, e2e PASS):** httpx, auth/roles, audit, observations + state machine, media, geographic (+ real Kastamonu regions), review, notifications, app wiring, `scripts/e2e.sh`, tests; includes `client_ref` idempotency (offline sync)
-- [ ] **B flutter-foundation:** design system, API client + models, auth, responsive shell, map, profile, extension points
+- [x] **B flutter-foundation (merged 340aaa8; post-merge analyze, 37 tests, Linux build and native visual QA at 1400/900/400 passed):** design system, API client + models, auth, responsive shell, map, profile, extension points
 - [x] **D1 intelligence services (merged):** AI provider adapters, jobs worker, RAG (hybrid retrieval, citations, access filter), RSS ingest + scheduler
 - [x] **E1 simulation (merged a8238a8):** Open-Meteo ingestion, climate/drought model, scenario persistence, SIMULATION.md
 
 ### Phase 2 — after Phase 1 merge
+- [x] B follow-up: bundled OFL fonts (Atkinson Hyperlegible Next for Turkish İ), verified Turkish glyph coverage; removed obsolete main-only counter test after merge.
+
 - [ ] D2: HTTP handlers + wiring for `/ai/*`, `/feeds*`, `/admin/feeds*`
-- [ ] E2: HTTP handlers + wiring for `/simulations*`, `/environment/measurements`
+- [x] E2: HTTP handlers + wiring for `/simulations*`, `/environment/measurements` (merged af32b5f; backend vet + race tests passed)
 - [ ] C: Flutter observation wizard (6 steps) + **offline queue** + expert/review dashboard
 - [ ] F: Flutter AI assistant tab, Official Updates tab, Simulation tab (what-if + comparison charts), analytics charts
 - [ ] Offline map-tile pack (stretch)
 
 ### Phase 3 — integration (lead)
-- [ ] Merge all branches, resolve conflicts, `go mod tidy`
+- [ ] Merge remaining Phase 2 work, resolve conflicts, `go mod tidy` (all four original agent branches already merged)
 - [ ] E2E: observation → review → map → AI query; RSS → RAG → cited answer; region → simulation → comparison
 - [ ] Security probes: 401/403 matrix, fake magic bytes, sensitive-location leak, injection chunk
 - [ ] Docs: ARCHITECTURE, DATABASE, DATA_SOURCES, SIMULATION, DEMO

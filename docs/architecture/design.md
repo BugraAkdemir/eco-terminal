@@ -14,7 +14,7 @@ contour texture, and field-guide style cards. Memorable details (use sparingly, 
 
 ## Typography (bundle fonts as assets — offline-safe; OFL licenses; VERIFY Turkish glyphs ğ Ğ ş Ş ı İ ö ç ü render)
 - Display / headings: **Fraunces** (characterful serif) — screen titles, big numbers in summary cards.
-- Body / UI: **Atkinson Hyperlegible** (designed for legibility) — all UI text, forms, buttons.
+- Body / UI: **Atkinson Hyperlegible Next** (designed for legibility; original version lacks Turkish İ) — all UI text, forms, buttons.
 - Data / coordinates / IDs: **IBM Plex Mono** — coordinates, reference numbers (ET-2026-…), timestamps, counts in tables.
 No Inter/Roboto/system-default look. Minimum body 16 sp on mobile, 14 sp on desktop dense panels; must scale with OS text size up to 200% without clipping.
 

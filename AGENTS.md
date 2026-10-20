@@ -95,7 +95,10 @@ Henüz release süreci tanımlı değil.
 > - Group entries under a `### <Module/Area>` heading per subsystem, with a date if the finding is time-sensitive.
 > - Never re-describe a fix that's already fully captured by `git log`/commit messages — link to the commit hash instead of duplicating the diff in prose.
 
-_Henüz kayıt yok. Modül/alan başlıkları (`### <Module> (<path/>)`) kod eklendikçe açılacak._
+### Flutter foundation (`apps/flutter_app/`)
+
+- ~~Flutter merge sonrası `flutter analyze` hata veriyordu: main'de kalan şablon `test/widget_test.dart`, B branch'inde bulunmayan ve artık var olmayan `MyApp` sayaç uygulamasını çağırıyordu.~~ → fixed 2026-10-20 (bu oturumun Flutter doğrulama commit’i): eski şablon kaldırıldı; gerçek uygulamanın açılışı ve responsive kabuğu `shell_test.dart` kapsamında doğrulanıyor.
+- ~~Atkinson Hyperlegible'ın ilk sürümünde U+0130 (`İ`) yok; gövde metninde Türkçe büyük İ sistem fontuna düşüyordu.~~ → fixed 2026-10-20 (bu oturumun font commit’i): tüm Türkçe glifleri içeren Atkinson Hyperlegible Next, Fraunces ve IBM Plex Mono lisanslarıyla gömüldü; font dosyaları değiştirilmedi.
 
 ---
 

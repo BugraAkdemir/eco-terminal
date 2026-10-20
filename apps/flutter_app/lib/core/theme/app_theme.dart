@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'tokens.dart';
 
 /// Font families. Fraunces (display), Atkinson Hyperlegible (body/UI) and
-/// IBM Plex Mono (coordinates, ids, counts) are OFL fonts meant to be bundled
-/// under `assets/fonts/` (see docs/architecture/flutter.md). Until the files
-/// are added the platform fallbacks below are used, so nothing needs the
-/// network at runtime.
+/// IBM Plex Mono (coordinates, ids, counts) are OFL fonts bundled under
+/// `assets/fonts/` (see docs/architecture/flutter.md). System fallbacks cover
+/// glyphs outside the bundled fonts; no network is needed for typography.
 const String kDisplayFont = 'Fraunces';
 const String kBodyFont = 'AtkinsonHyperlegible';
 const String kMonoFont = 'IBMPlexMono';

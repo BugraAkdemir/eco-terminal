@@ -105,7 +105,7 @@ All of these compile in `flutter build linux`: flutter_map, flutter_map_marker_c
 
 Tokens live in `core/theme/tokens.dart` (`context.eco`): dark navy (default), light and an outdoor high-contrast theme (user menu). All three are covered by a WCAG test (>= 4.5:1 accents, >= 7:1 body). Status is a "survey tag" (icon + text + colour, never colour alone; tapping shows a one-line explanation), markers use shape + icon, thin borders, faint static contour texture. Body text is 16sp, touch targets 48dp, motion 150-250 ms and disabled with OS reduce-motion; the shell survives 200% text scale (tested).
 
-Fonts: Fraunces (headings), Atkinson Hyperlegible (body/UI), IBM Plex Mono (coordinates, ids, counts) are the configured families (`kDisplayFont`, `kBodyFont`, `kMonoFont`) with offline system fallbacks. The OFL font files are not bundled yet: add them under `assets/fonts/` and declare the three families in `pubspec.yaml` (`flutter: fonts:`); no code change is needed. Verify ğ Ğ ş Ş ı İ ö ç ü after adding.
+Fonts: Fraunces (headings), Atkinson Hyperlegible Next (body/UI; keeps the `AtkinsonHyperlegible` Flutter alias), IBM Plex Mono (coordinates, ids, counts) are the configured families (`kDisplayFont`, `kBodyFont`, `kMonoFont`) bundled under `assets/fonts/` and declared in `pubspec.yaml`; no runtime font download is needed. Each family includes its OFL license. See `assets/fonts/README.md` for provenance and Turkish glyph coverage verification. System fallbacks remain for unsupported scripts.
 
 ## Known gaps
 

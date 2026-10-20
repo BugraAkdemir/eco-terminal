@@ -1,3 +1,45 @@
+# Handoff — 2026-10-20 (Session 3) — Flutter birleşimi doğrulandı; D2 devam ediyor
+## Summary
+Dört eski ajan branch'inin `main..branch` çıktısı boş; tamamı zaten main'e alınmış. Flutter temeli yeniden doğrulandı, fontlar gömüldü, eski sayaç testi kaldırıldı. **Commit status:** bu kayıtla birlikte Flutter checkpoint commit'i; D2 henüz yapılmadı.
+## What Was Done
+- Main'de merge artığı `test/widget_test.dart` artık olmayan MyApp'ı çağırıyordu; B branch'inde de bulunmayan eski şablon silindi. Gerçek uygulama shell/routing testleri korunuyor.
+- Fraunces, IBM Plex Mono ve Atkinson Hyperlegible Next orijinal fontları OFL lisanslarıyla `assets/fonts/` içine gömüldü. Orijinal Atkinson U+0130 (`İ`) içermediği için Next seçildi; plan/tasarım belgesi güncellendi. SHA-256 ve kaynaklar assets/fonts/README.md içinde.
+- Native Linux uygulaması geçici demo DB kullanan gerçek API ile 1400/900/400 px genişliklerinde görüntülendi. Ekranlar `/tmp/eco-terminal-session3/native-{1400,900,400}.png`. Xvfb'de engine environment switches ile software rendering gerekli; normal deneme siyah görüntü veriyordu. Bu bir ürün düzeltmesi değil, QA ortamı ayarıdır.
+- Plan.md B/E2 kutuları gerçek merge ve doğrulama durumuna getirildi.
+## Verification
+```text
+cd backend && make vet && make test
+go vet -tags "sqlite_fts5 sqlite_rtree" ./...
+go test -tags "sqlite_fts5 sqlite_rtree" -race ./...
+ok .../internal/ai (cached)
+ok .../internal/jobs (cached)
+ok .../internal/rag (cached)
+ok .../internal/rss (cached)
+ok .../internal/simulation (cached)
+ok .../tests (cached)
+# Diğer paketler de ok / [no test files], exit 0.
+
+cd apps/flutter_app && flutter analyze --no-pub && flutter test --no-pub --reporter expanded && flutter build linux --no-pub
+No issues found! (ran in 1.9s)
+00:04 +37: All tests passed!
+✓ Built build/linux/x64/release/bundle/eco_terminal
+
+env ADMIN_EMAIL=qa@example.test ADMIN_PASSWORD=<temporary-test-password> ./scripts/e2e.sh
+[1] health
+[15] audit log has the verification (admin)
+PASS: e2e flow ok (ET-2026-000026, observation e846048c-026a-443e-813d-8e302a14c522)
+
+fc-query --format=%{charset} <each bundled ttf>
+All 8 binaries: ğĞşŞıİöÖçÇüÜ PASS
+```
+TestSprite bağlı değil (`git ls-files '*testsprite*'` boş); yeni servis kurulmadı. Android/iOS/Windows/macOS/web doğrulanmadı. Native QA günlüğünde headless ATK/portal uyarıları var; ekranlarda uygulama görünür, işlev testleri geçti.
+## Next Session
+1. D2: AI/RSS HTTP handler'ları, jobs ve RSS worker wiring; caller yalnız auth.UserFrom'dan.
+2. Ardından C: gözlem sihirbazı + offline queue + uzman paneli, F: AI/duyuru/simülasyon ekranları.
+3. Faz 3 entegrasyon, belgeler ve nihai doğrulama. Push/deploy yapılmadı; açık kullanıcı talebi olmadan yapılmayacak.
+
+---
+
 # handoff.md — how this file works
 
 `handoff.md` is the running session log a coding agent reads at the **start**
