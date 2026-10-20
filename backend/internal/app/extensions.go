@@ -9,6 +9,7 @@ package app
 // A Module that also implements Worker is started/stopped automatically; do not add it twice.
 // d.DB, d.Config, d.Logger, d.Auth, d.Require(...) and d.Observations are available for wiring.
 func extensions(d Deps) (mods []Module, workers []Worker) {
-	_ = d
+	mods = append(mods, newSimulationModule(d)) // /simulations*, /environment/measurements + climate data preparation worker
+	// Narrative hook: newSimulationModule(d, simulation.WithExplainer(textProviderAdapter)) once internal/ai provides one.
 	return mods, workers
 }

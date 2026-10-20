@@ -453,7 +453,21 @@ paths:
           application/json:
             schema: {$ref: '#/components/schemas/SimulationRunRequest'}
       responses:
-        '200': {description: OK (status may be insufficient_data), content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/SimulationResult'}}}}}}
+        '200': {description: "OK (status may be insufficient_data, which is a normal answer; it includes the case 'climate data for this region is still being prepared' - then `id` is empty, nothing is persisted and the same request can be repeated a few minutes later)", content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/SimulationResult'}}}}}}
+        '400': {description: 'validation_failed (bad dates, scale, precip_change_pct outside -100..500, temp_change_c outside -15..15, unknown model)'}
+        '403': {description: 'forbidden (researcher or admin required)'}
+        '404': {description: 'unknown region_id'}
+  /simulations/compare:
+    get:
+      tags: [simulation]
+      summary: Side-by-side indicator deltas of two own results (owner or admin of both)
+      parameters:
+        - {name: a, in: query, required: true, schema: {type: string}, description: result id}
+        - {name: b, in: query, required: true, schema: {type: string}, description: result id}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/SimulationComparison'}}}}}}
+        '400': {description: 'validation_failed (missing ids, or a result is not status ok)'}
+        '404': {description: 'not found (or not yours)'}
   /simulations:
     get:
       tags: [simulation]
@@ -474,12 +488,12 @@ paths:
       parameters:
         - {name: region_id, in: query, required: true, schema: {type: string}}
         - {name: type, in: query, required: true, schema: {type: string, enum: [precipitation, temperature_mean]}}
-        - {name: from, in: query, schema: {type: string}}
-        - {name: to, in: query, schema: {type: string}}
-        - {name: resolution, in: query, schema: {type: string, enum: [daily, monthly]}}
+        - {name: from, in: query, schema: {type: string}, description: 'YYYY-MM-DD or YYYY-MM; default = start of stored data'}
+        - {name: to, in: query, schema: {type: string}, description: 'YYYY-MM-DD or YYYY-MM; default = end of stored data'}
+        - {name: resolution, in: query, schema: {type: string, enum: [daily, monthly], default: monthly}}
       responses:
         '200':
-          description: OK
+          description: 'OK. Public, read-only: it never calls the climate provider; a region without stored data returns an empty `points` array and coverage 0.'
           content:
             application/json:
               schema:
@@ -491,6 +505,9 @@ paths:
                       dataset: {type: string}
                       unit: {type: string}
                       coverage: {type: number, description: fraction of expected points present}
+                      attribution: {type: string, description: 'licence credit line to display with charts (CC BY 4.0)'}
+                      source: {type: string}
+                      license: {type: string}
                       points:
                         type: array
                         items:
@@ -823,17 +840,52 @@ components:
         region_id: {type: string}
         reference_from: {type: string, description: 'YYYY-MM (inclusive), >= 10 years recommended'}
         reference_to: {type: string}
-        precip_change_pct: {type: number, description: 'e.g. -20 means 20% less precipitation'}
-        temp_change_c: {type: number, description: 'e.g. 2 means +2 degC'}
+        scale: {type: integer, enum: [1, 3, 6], default: 3, description: 'accumulation window (months) of SPI / water-balance index'}
+        precip_change_pct: {type: number, description: 'e.g. -20 means 20% less precipitation; allowed -100..500'}
+        temp_change_c: {type: number, description: 'e.g. 2 means +2 degC; allowed -15..15'}
         explain: {type: boolean, description: if true and a text provider exists, add a narrative}
+    SimulationComparison:
+      type: object
+      properties:
+        a_id: {type: string}
+        b_id: {type: string}
+        a_name: {type: string}
+        b_name: {type: string}
+        a_params: {type: object}
+        b_params: {type: object}
+        same_baseline: {type: boolean, description: 'same model, region, reference period and window; otherwise deltas compare scenarios against different references'}
+        deltas:
+          type: array
+          items:
+            type: object
+            properties:
+              key: {type: string}
+              label: {type: string}
+              unit: {type: string}
+              a_reference: {type: number}
+              a_scenario: {type: number}
+              a_change: {type: number}
+              b_reference: {type: number}
+              b_scenario: {type: number}
+              b_change: {type: number}
+              delta: {type: number, description: 'b_scenario - a_scenario'}
+              reference_differs: {type: boolean}
+        only_in_a: {type: array, items: {type: string}}
+        only_in_b: {type: array, items: {type: string}}
     SimulationResult:
       type: object
       properties:
         id: {type: string}
         scenario_id: {type: string}
         name: {type: string}
+        model: {type: string, description: registry key, e.g. climate_drought_v1}
+        region_id: {type: string}
         status: {type: string, enum: [ok, insufficient_data, error]}
         params: {type: object}
+        coverage:
+          type: object
+          nullable: true
+          description: reference-data completeness (months, valid_months, precip, temp, both as fractions, index_months, wbsi_fallback_months, years)
         indicators:
           type: array
           description: Reference vs scenario values per indicator (SPI-style precip anomaly, PET, water balance, SPEI-like, dry-month count)
@@ -854,7 +906,7 @@ components:
             properties:
               key: {type: string}
               points: {type: array, items: {type: object, properties: {month: {type: string}, reference: {type: number}, scenario: {type: number}}}}
-        data_sources: {type: array, items: {type: object, properties: {dataset: {type: string}, source: {type: string}, license: {type: string}, coverage: {type: number}}}}
+        data_sources: {type: array, items: {type: object, properties: {dataset: {type: string}, source: {type: string}, license: {type: string}, coverage: {type: number}, attribution: {type: string, description: 'credit line required by the licence (CC BY 4.0): show it next to any chart/indicator built from this data, e.g. "Weather data by Open-Meteo.com ..."'}}}}
         assumptions: {type: array, items: {type: string}}
         limitations: {type: array, items: {type: string}}
         insufficient_reason: {type: string, nullable: true}

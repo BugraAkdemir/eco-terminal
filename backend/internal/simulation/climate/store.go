@@ -23,6 +23,8 @@ const (
 	SpatialResolution  = "ERA5 reanalysis grid 0.25 deg (~25 km); one grid cell per region (nearest to the centroid), not a region average"
 	TemporalResolution = "daily (UTC days); archive lags real time by about 5 days"
 	DatasetURL         = "https://open-meteo.com/en/docs/historical-weather-api"
+	// Attribution is the credit line required by the CC BY 4.0 licence of the data.
+	Attribution = "Weather data by Open-Meteo.com (https://open-meteo.com/), CC BY 4.0. Contains modified Copernicus Climate Change Service information (ERA5)."
 )
 
 // ErrRegionNotFound is returned when a region id does not exist.
