@@ -40,6 +40,41 @@ should never have to reconstruct "what was I doing" from git log alone.
 
 ---
 
+# Handoff — 2026-10-20 (Session 2b) — KOTA DURDURMASI: nereden devam edilecek
+
+## Durum (kota bitti, hesap değişecek)
+Genel ilerleme ~%60. `main` GitHub'a push'lu. Aşağıda birleşen ve bekleyen parçalar:
+
+| Parça | Durum | Konum |
+|-------|-------|-------|
+| Faz 0 (iskelet, şema, OpenAPI, AGENTS.md, plan.md, design.md) | ✅ | main |
+| A backend-core | ✅ merge + e2e + güvenlik denemeleri geçti | main (`cde7e97`) |
+| E1 simülasyon motoru + gerçek ERA5 verisi | ✅ | main (`a8238a8`) |
+| D1 ai/jobs/rag/rss servisleri | ✅ merge edildi, `make vet` + `make test -race` geçti. **HTTP handler/wiring YOK** | main (bu commit) |
+| B Flutter temeli | ⚠️ **MERGE EDİLMEDİ**: branch `worktree-agent-af2f37e9ce2340c3d` (4 commit, çalışma ağacı temiz, ~11.700 satır Dart). `flutter analyze/test/build linux` henüz benim tarafımdan doğrulanmadı | yerel branch |
+| E2 simülasyon HTTP handler'ları | ⚠️ yarım: branch `worktree-agent-adcbb5755c0329019`, 13 dosya commit'siz olabilir (durdurma mesajı gönderildi, ajan commit etmiş olabilir) | yerel branch |
+
+Yerel ajan branch'leri GitHub'da YOK (yalnız `main` push'lu). Aynı makinede devam edilecekse `.claude/worktrees/agent-*` dizinleri duruyor.
+Başka makineden devam edilecekse önce bu branch'leri push et: `git push origin worktree-agent-af2f37e9ce2340c3d worktree-agent-adcbb5755c0329019`.
+
+## Sıradaki adımlar (bu sırayla)
+1. **E2'yi kontrol et:** `cd .claude/worktrees/agent-adcbb5755c0329019 && git status && git log --oneline main..HEAD`. Commit'siz dosya varsa commit et. `git merge main`, `make vet && make test`. Yarımsa tamamla: `/simulations/run|list|{id}|compare`, `/environment/measurements`, başlangıçta iklim verisi hazırlayan worker (`ECO_CLIMATE_SNAPSHOT`), OpenAPI eklemeleri (`scale`, `model`, `region_id`, `coverage`, compare, atıf "Weather data by Open-Meteo.com"), `internal/app/extensions.go`'ya tek satır. Sonra main'e merge.
+2. **B'yi doğrula ve merge et:** `git merge --no-ff worktree-agent-af2f37e9ce2340c3d`; çakışma çıkarsa B'nin `apps/` dosyalarını al (B yalnız `apps/flutter_app` + `docs/architecture/flutter.md` sahibi). Sonra `cd apps/flutter_app && flutter pub get && flutter analyze && flutter test && flutter build linux`; backend'i `ECO_SEED_DEMO=true` ile çalıştırıp uygulamayı Linux'ta aç, ekran görüntüsüyle bak. Eklenti noktaları: `docs/architecture/flutter.md`.
+3. **D2 (lead veya yeni ajan):** D1'in servislerini HTTP'ye bağla: `/ai/chat`, `/ai/providers/status`, `/ai/analyze-observation`, `/feeds`, `/feeds/articles`, `/admin/feeds`, `/admin/feeds/sync`. Başlangıçta `rss.SeedSources(db,"datasets/seed/rss_sources.json")`, `jobs.NewWorker` + `jobs.RegisterDefaultHandlers`, `rss.NewScheduler`. `rag.Caller` mutlaka oturumdan (`auth.UserFrom`) kurulmalı, yoksa erişim filtresi atlanır. Kullanılacak imzalar D1 raporunda: `rag.New(db,cfg,providers)`, `Answer(ctx, ChatRequest, Caller)`, `rss.NewService(db,cfg,ragEngine)`, `jobs.EnqueueTx`. E2'nin `Explainer` arayüzüne D1'in text provider'ını bağlayan ince adaptör yaz.
+4. **C ajanı (Flutter):** gözlem sihirbazı (6 adım) + **çevrimdışı kuyruk** (`client_ref`, bkz. plan.md) + uzman/review paneli (+ `/expert`, `/observations/new` route'ları). **F ajanı:** AI Asistan, Resmî Duyurular, Simülasyon sekmeleri + analiz grafikleri (+ Open-Meteo atfı). İkisi paralel, B'nin eklenti noktalarına dosya ekleyerek. Tasarım kuralı: `docs/architecture/design.md`.
+5. **Faz 3:** entegrasyon e2e (gözlem→review→harita→AI sorgusu; RSS→RAG→kaynaklı cevap; bölge→simülasyon→karşılaştırma), README/DEMO/DATA_SOURCES/ARCHITECTURE dokümanları, `AGENTS.md` Known Pitfalls ve `BUG_REPORT.md` güncelle, dürüst "yapılmadı/doğrulanamadı" raporu. Sonra push.
+
+## Bilinen sınırlar / açık riskler (ayrıntı: ilgili ajan raporları ve docs/)
+- AI hiç gerçek sağlayıcıyla denenmedi (sahte OpenAI sunucusuyla test edildi). `ECO_AI_*` doldurulunca ilk iş gerçek chat/vision/embedding denemesi.
+- RSS: doğrulanan 10 kaynak `docs/data_sources/rss.md`; MGM, AFAD, DKMP, Kastamonu Valiliği için çalışan RSS bulunamadı (entegrasyon iddia edilmiyor).
+- Simülasyon: delta-change deneyi, tahmin değil; wbsi standart SPEI değil; ERA5 25 km hücre; Open-Meteo ücretsiz API ticari olmayan kullanım içindir.
+- Android SDK/Chrome yok; iOS/Windows/macOS bu makinede derlenemez — README'de "doğrulanmadı" yazıyor.
+- Arama `q` LIKE (İ/ı katlanmaz); sadeleştirilmiş sınırlarda sınır noktaları komşu ilçeye düşebilir; job temizliği yok.
+- Test kapsamı bilinçli olarak az tutuldu (kullanıcı kararı); kritik yollar (yetki, yükleme, hassas konum, durum makinesi, RAG erişim filtresi, simülasyon matematiği, e2e) testli.
+- Commit kuralı: AI-attribution satırı YOK (AGENTS.md rule 6).
+
+---
+
 # Handoff — 2026-10-20 (Session 2) — Faz 0 temeli + paralel ajanlar (DEVAM EDİYOR)
 
 ## Summary
