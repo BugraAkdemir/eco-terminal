@@ -40,6 +40,56 @@ should never have to reconstruct "what was I doing" from git log alone.
 
 ---
 
+# Handoff — 2026-10-20 (Session 2) — Faz 0 temeli + paralel ajanlar (DEVAM EDİYOR)
+
+## Summary
+
+Kullanıcının "Master Development Prompt"u (tam Eco Terminal) ile geliştirme başladı. Plan onaylandı
+(kapsam: P0+P1+tek simülasyon; AI: OpenAI-uyumlu env adaptörü; commit'lerde AI-attribution YOK).
+Faz 0 (temel + sözleşmeler) bitti ve commit'lendi; Faz 1'de 4 ajan kendi git worktree'lerinde paralel çalışıyor.
+
+**Commit status:** `1bfe114` (main) — monorepo iskeleti, `0001_init.sql`, `docs/api/openapi.yaml`,
+`backend/internal/{config,storage}`, Flutter iskeleti, doldurulmuş `AGENTS.md`. Ajan branch'leri henüz merge edilmedi.
+
+---
+
+## What Was Done
+
+### 1. Faz 0 kararları
+- **SQLite sürücüsü:** `mattn/go-sqlite3` (CGO) + sqlite-vec CGO. ncruces WASM yolu denendi, Go 1.27'de ABI uyuşmazlığıyla başarısız
+  (bkz. `docs/architecture/vector-store.md`). Spike: vec0 KNN + FTS5 + RTree çalışıyor (SQLite 3.53.4, vec 0.1.6).
+  Build etiketleri zorunlu: `-tags "sqlite_fts5 sqlite_rtree"` (`backend/Makefile`).
+- **Harita:** `flutter_map` (MapLibre GL eklentileri Linux/Windows masaüstünü desteklemiyor).
+- **Ortam:** Go 1.27.1, Flutter 3.44.6. Android SDK ve Chrome YOK → android/web derlemeleri doğrulanamaz; iOS/Windows/macOS bu Linux makinede derlenemez.
+
+### 2. Paralel ajanlar (Faz 1, ayrı worktree'ler)
+| Ajan | Sahiplik | Durum |
+|------|----------|-------|
+| A backend-core | httpx, auth, audit, observations, media, geographic, review, notifications, app, e2e | çalışıyor |
+| B flutter-foundation | apps/flutter_app core, tema, API istemcisi, auth, shell, harita, profil | çalışıyor |
+| D1 intelligence | ai, rag, rss, jobs (yalnız servis katmanı) | çalışıyor |
+| E1 simulation | simulation + Open-Meteo iklim verisi (yalnız servis katmanı) | çalışıyor |
+
+**Deliberately not done:** Flutter gözlem sihirbazı/uzman paneli/AI/Resmî/Simülasyon ekranları (B bitince C/F ajanları),
+D1/E1 HTTP handler'ları (A merge olunca faz 2).
+
+---
+
+## Verification
+
+Faz 0: `cd backend && go test -tags "sqlite_fts5 sqlite_rtree" -race ./...` → `ok .../internal/storage 1.019s`; `go vet` temiz;
+`sqlite3 < 0001_init.sql` hatasız (98 şema nesnesi); openapi.yaml YAML olarak geçerli (31 path, 25 schema).
+
+---
+
+## Next Session
+
+1. Ajan raporlarını al, branch'leri sırayla merge et (A → D1/E1 → B), `go.mod` çakışmalarını `go mod tidy` ile çöz, tam doğrulamayı çalıştır.
+2. Faz 2: D1 ve E1'e HTTP handler + `internal/app` kaydı için devam mesajı; B sonrası C (gözlem sihirbazı + uzman paneli) ve F (AI/Resmî/Simülasyon UI) ajanları.
+3. Faz 3: entegrasyon testleri, README/ARCHITECTURE/DATABASE/DATA_SOURCES/SIMULATION/DEMO dokümanları, dürüst "yapılmadı/doğrulanamadı" raporu.
+
+---
+
 # Handoff — 2026-10-20 (Session 1) — Agent şablonlarının kurulumu
 
 ## Summary
