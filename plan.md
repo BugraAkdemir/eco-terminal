@@ -38,7 +38,7 @@ Toolchain: Go 1.27.1, Flutter 3.44.6 / Dart 3.12.2, gcc. Verifiable here: backen
 
 `main`: yalnızca lead (ben) çalışıyor; ajan branch'leri bitince sırayla `main`'e merge edilir. Planlanan sonraki ajanlar: **D2** (AI/RSS handler'ları), **E2** (simülasyon handler'ları), **C** (gözlem sihirbazı + offline kuyruk + uzman paneli), **F** (AI/Resmî/Simülasyon arayüzleri).
 
-- [ ] **A backend-core** (kod yazıldı, testler/e2e bekleniyor): httpx, auth/roles, audit, observations + state machine, media, geographic (+ real Kastamonu regions), review, notifications, app wiring, `scripts/e2e.sh`, tests; includes `client_ref` idempotency (offline sync)
+- [x] **A backend-core (merged cde7e97, e2e PASS):** httpx, auth/roles, audit, observations + state machine, media, geographic (+ real Kastamonu regions), review, notifications, app wiring, `scripts/e2e.sh`, tests; includes `client_ref` idempotency (offline sync)
 - [ ] **B flutter-foundation:** design system, API client + models, auth, responsive shell, map, profile, extension points
 - [ ] **D1 intelligence services:** AI provider adapters, jobs worker, RAG (hybrid retrieval, citations, access filter), RSS ingest + scheduler
 - [x] **E1 simulation (merged a8238a8):** Open-Meteo ingestion, climate/drought model, scenario persistence, SIMULATION.md

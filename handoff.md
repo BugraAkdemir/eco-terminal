@@ -110,6 +110,19 @@ Doğrulama (lead, merge sonrası): `make vet` temiz; `make test` → simulation,
 - Phase 2 (E2) için: handler'lar + `internal/app` kaydı; ilk indirme `Service.EnsureData` ile tetiklenmeli (GET içinde fetch yok). Explainer = D1'in text provider'ı.
 - Yapılmadı: HTTP handler/wiring; wbsi R-SPEI ile çapraz doğrulanmadı.
 
+### 3e. A (backend core) BİTTİ ve main'e merge edildi (`cde7e97`)
+Çakışmalar (add/add: main.go, go.mod/go.sum, openapi.yaml) A'nın sürümleriyle çözüldü, `go mod tidy` yapıldı.
+**Lead doğrulaması (gerçek çıktı):** `make vet` temiz; `make test` → geographic, httpx, observations, simulation(+climate,model), storage, tests `ok` (-race);
+canlı sunucu (ECO_SEED_DEMO=true) + `scripts/e2e.sh` → `PASS: e2e flow ok`. Güvenlik denemeleri (curl): anon → review/admin 401; citizen → review/admin/region-oluştur 403;
+zayıf şifre 400; metin/PHP dosyası .png/.jpg diye yüklenince 415; başka kullanıcı PATCH/başkasının onaysız kaydı 404; anonim listede hassas 2 kayıt **genelleştirilmiş koordinatla** (exact_location yok);
+sahte X-Forwarded-For ile 25 login denemesinde 16 tanesi 429 (XFF yok sayılıyor); `q=' OR 1=1--` 200 (parametreli SQL); path traversal 404; 3 MB gövde → 400.
+- Sözleşme: `0002_client_ref.sql` + OpenAPI (`client_ref`, duplicate → 200, medya sha256 idempotent, observed_at ≤ 10 yıl geçmiş).
+- Gerçek sınırlar: geoBoundaries gbOpen (ODbL) — Kastamonu ili + 20 ilçe (21 bölge), `docs/data_sources/regions.md`.
+- Bilinen sınırlar (A raporu): `q` arama LIKE (İ/ı katlanmaz); bbox her zaman PUBLIC koordinata göre; poligon self-intersection kontrolü yok;
+  tek medya silme endpoint'i yok (sözleşmede yok); sadeleştirilmiş sınırlarda (~40 m) sınır noktaları komşu ilçeye düşebilir; WebP kaydı JPEG/PNG'ye çevriliyor.
+- Eklenti noktası: `backend/internal/app/extensions.go` (Module{Register}, Worker{Start,Stop}); yardımcılar `backend/internal/httpx/README.md`.
+- Küçük not: 3 MB JSON gövde 413 yerine 400 dönüyor (kabul edilebilir).
+
 ### 4. Bilinen sorunlar / gözlemler
 - A ve B worktree'leri yanlışlıkla eski `7f6c707` commit'inden açıldı (D1/E1 doğru). A temel dosyaları kopyalayarak toparladı; merge'de yalnız ajanların kendi dizinleri alınacak.
 - A'nın `httpx/audit/password` kodu okundu: ciddi bulgu yok. Merge'de bakılacaklar: genel `BodyLimit` vs medya limiti, reverse-proxy arkasında tek-IP rate limit,
