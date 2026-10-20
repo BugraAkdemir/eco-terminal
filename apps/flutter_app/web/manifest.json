@@ -1,6 +1,6 @@
 {
-    "name": "eco_terminal",
-    "short_name": "eco_terminal",
+    "name": "Bio Radar",
+    "short_name": "Bio Radar",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

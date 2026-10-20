@@ -12,6 +12,7 @@ import '../theme/tokens.dart';
 import '../../shared_widgets/shared_widgets.dart';
 import 'app_header.dart';
 import 'offline_queue.dart';
+import '../../features/observations/presentation/queue_page.dart';
 
 /// Frame around every in-app page: offline banner, header, content and (on
 /// mobile) the bottom navigation Harita / Gözlem Ekle / AI / Profil.
@@ -37,61 +38,63 @@ class AppShell extends ConsumerWidget {
     final s = context.s;
     final path = GoRouterState.of(context).uri.path;
 
-    return Scaffold(
-      body: Column(
-        children: [
-          if (!online)
-            OfflineBanner(
-              onRetry: () => _checkConnection(ref),
-              queueEnabled: queue.supported,
-            ),
-          const AppHeader(),
-          Expanded(child: child),
-        ],
-      ),
-      bottomNavigationBar: mobile
-          ? NavigationBar(
-              selectedIndex: _indexFor(path),
-              onDestinationSelected: (i) {
-                switch (i) {
-                  case 0:
-                    context.go(AppPaths.home);
-                  case 1:
-                    context.go(AppPaths.newObservation);
-                  case 2:
-                    context.go(AppPaths.ai);
-                  case 3:
-                    context.go(AppPaths.profile);
-                }
-              },
-              destinations: [
-                NavigationDestination(
-                  icon: const Icon(Icons.map_outlined),
-                  selectedIcon: const Icon(Icons.map),
-                  label: s.navMap,
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.add_circle_outline),
-                  selectedIcon: const Icon(Icons.add_circle),
-                  label: s.navAddObservation,
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.auto_awesome_outlined),
-                  selectedIcon: const Icon(Icons.auto_awesome),
-                  label: s.navAi,
-                ),
-                NavigationDestination(
-                  icon: Badge(
-                    isLabelVisible: queue.pending > 0,
-                    label: Text('${queue.pending}'),
-                    child: const Icon(Icons.person_outline),
+    return DraftQueueHost(
+      child: Scaffold(
+        body: Column(
+          children: [
+            if (!online)
+              OfflineBanner(
+                onRetry: () => _checkConnection(ref),
+                queueEnabled: queue.supported,
+              ),
+            const AppHeader(),
+            Expanded(child: child),
+          ],
+        ),
+        bottomNavigationBar: mobile
+            ? NavigationBar(
+                selectedIndex: _indexFor(path),
+                onDestinationSelected: (i) {
+                  switch (i) {
+                    case 0:
+                      context.go(AppPaths.home);
+                    case 1:
+                      context.go(AppPaths.newObservation);
+                    case 2:
+                      context.go(AppPaths.ai);
+                    case 3:
+                      context.go(AppPaths.profile);
+                  }
+                },
+                destinations: [
+                  NavigationDestination(
+                    icon: const Icon(Icons.map_outlined),
+                    selectedIcon: const Icon(Icons.map),
+                    label: s.navMap,
                   ),
-                  selectedIcon: const Icon(Icons.person),
-                  label: s.navProfile,
-                ),
-              ],
-            )
-          : null,
+                  NavigationDestination(
+                    icon: const Icon(Icons.add_circle_outline),
+                    selectedIcon: const Icon(Icons.add_circle),
+                    label: s.navAddObservation,
+                  ),
+                  NavigationDestination(
+                    icon: const Icon(Icons.auto_awesome_outlined),
+                    selectedIcon: const Icon(Icons.auto_awesome),
+                    label: s.navAi,
+                  ),
+                  NavigationDestination(
+                    icon: Badge(
+                      isLabelVisible: queue.pending > 0,
+                      label: Text('${queue.pending}'),
+                      child: const Icon(Icons.person_outline),
+                    ),
+                    selectedIcon: const Icon(Icons.person),
+                    label: s.navProfile,
+                  ),
+                ],
+              )
+            : null,
+      ),
     );
   }
 

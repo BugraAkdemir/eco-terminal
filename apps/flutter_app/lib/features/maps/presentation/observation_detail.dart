@@ -5,6 +5,7 @@ import '../../../core/api/providers.dart';
 import '../../../core/l10n/format.dart';
 import '../../../core/l10n/strings.dart';
 import '../../../core/models/models.dart';
+import '../../../core/session/session_controller.dart';
 import '../../../core/theme/app_theme.dart' show monoStyle;
 import '../../../core/theme/tokens.dart';
 import '../../../shared_widgets/shared_widgets.dart';
@@ -34,7 +35,12 @@ class ObservationDetailCard extends ConsumerWidget {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Dimens.lg, Dimens.sm, Dimens.sm, 0),
+            padding: const EdgeInsets.fromLTRB(
+              Dimens.lg,
+              Dimens.sm,
+              Dimens.sm,
+              0,
+            ),
             child: Row(
               children: [
                 Expanded(
@@ -111,6 +117,72 @@ class ObservationDetailBody extends ConsumerWidget {
           style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: Dimens.sm),
+        if (detail.status == ObservationStatus.needsInformation &&
+            ref.watch(sessionProvider).user?.id == detail.userId)
+          OutlinedButton.icon(
+            icon: const Icon(Icons.edit_note),
+            label: Text(
+              s.pick(
+                'Ek bilgi ekle ve uzmana gönder',
+                'Add information and send to reviewer',
+              ),
+            ),
+            onPressed: () async {
+              var response = detail.description;
+              final text = await showDialog<String>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: Text(
+                    s.pick(
+                      'Gözlem açıklamasını tamamlayın',
+                      'Complete the observation description',
+                    ),
+                  ),
+                  content: SizedBox(
+                    width: 500,
+                    child: TextFormField(
+                      initialValue: response,
+                      maxLength: 5000,
+                      minLines: 4,
+                      maxLines: 8,
+                      onChanged: (v) => response = v,
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: Text(s.cancel),
+                    ),
+                    FilledButton(
+                      onPressed: () => Navigator.pop(ctx, response),
+                      child: Text(s.send),
+                    ),
+                  ],
+                ),
+              );
+              if (text == null) return;
+              try {
+                await ref
+                    .read(observationsApiProvider)
+                    .patch(
+                      detail.id,
+                      ObservationPatch(description: text, submit: true),
+                    );
+                ref.invalidate(observationDetailProvider(detail.id));
+                if (context.mounted) {
+                  showSuccessSnack(
+                    context,
+                    s.pick(
+                      'Ek bilgi uzmana gönderildi.',
+                      'Additional information sent to reviewer.',
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) showErrorSnack(context, e);
+              }
+            },
+          ),
         Wrap(
           spacing: Dimens.sm,
           runSpacing: Dimens.sm,
@@ -184,8 +256,10 @@ class ObservationDetailBody extends ConsumerWidget {
                       width: 200,
                       height: 160,
                       color: eco.surfaceAlt,
-                      child: Icon(Icons.broken_image_outlined,
-                          color: eco.textMuted),
+                      child: Icon(
+                        Icons.broken_image_outlined,
+                        color: eco.textMuted,
+                      ),
                     ),
                   ),
                 );
@@ -212,15 +286,15 @@ class ObservationDetailBody extends ConsumerWidget {
         if (detail.countObserved != null)
           _Field(label: s.count, value: '${detail.countObserved}'),
         if (detail.accuracyM != null)
-          _Field(
-            label: s.accuracy,
-            value: '${detail.accuracyM!.round()} m',
-          ),
+          _Field(label: s.accuracy, value: '${detail.accuracyM!.round()} m'),
         if (detail.ownerDisplayName.isNotEmpty)
           _Field(label: s.observer, value: detail.ownerDisplayName),
         if (detail.description.isNotEmpty) ...[
           const SizedBox(height: Dimens.sm),
-          Text(s.notes, style: textTheme.labelMedium?.copyWith(color: eco.textMuted)),
+          Text(
+            s.notes,
+            style: textTheme.labelMedium?.copyWith(color: eco.textMuted),
+          ),
           const SizedBox(height: 2),
           Text(detail.description, style: textTheme.bodyMedium),
         ],
@@ -302,10 +376,9 @@ class _Field extends StatelessWidget {
             width: 120,
             child: Text(
               label,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: eco.textMuted),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: eco.textMuted),
             ),
           ),
           Expanded(
@@ -332,9 +405,11 @@ class _AiSuggestion extends StatelessWidget {
     final s = context.s;
     final eco = context.eco;
     final parts = <String>[
-      if (analysis.suggestedSpecies != null && analysis.suggestedSpecies!.isNotEmpty)
+      if (analysis.suggestedSpecies != null &&
+          analysis.suggestedSpecies!.isNotEmpty)
         analysis.suggestedSpecies!,
-      if (analysis.suggestedCategory != null && analysis.suggestedCategory!.isNotEmpty)
+      if (analysis.suggestedCategory != null &&
+          analysis.suggestedCategory!.isNotEmpty)
         s.categoryLabelWire(analysis.suggestedCategory!),
     ];
     return Padding(
@@ -387,10 +462,10 @@ class _AiSuggestion extends StatelessWidget {
               analysis.disclaimer.isNotEmpty
                   ? analysis.disclaimer
                   : s.aiDisclaimerDefault,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: eco.textMuted, fontStyle: FontStyle.italic),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: eco.textMuted,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
         ),
@@ -421,12 +496,13 @@ class _HistoryTile extends StatelessWidget {
                 Container(
                   width: 12,
                   height: 12,
-                  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                  ),
                 ),
                 if (!last)
-                  Expanded(
-                    child: Container(width: 2, color: eco.border),
-                  ),
+                  Expanded(child: Container(width: 2, color: eco.border)),
               ],
             ),
           ),
@@ -445,10 +521,9 @@ class _HistoryTile extends StatelessWidget {
                       if (entry.actorName.isNotEmpty) entry.actorName,
                       formatDateTime(context, entry.createdAt),
                     ].where((e) => e.isNotEmpty).join(' · '),
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: eco.textMuted),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: eco.textMuted),
                   ),
                   if (entry.note.isNotEmpty)
                     Padding(

@@ -18,7 +18,7 @@ class EcoApp extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     final highContrast = ref.watch(highContrastProvider);
     return MaterialApp.router(
-      title: 'Eco Terminal',
+      title: 'Bio Radar',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
       theme: highContrast ? AppTheme.highContrast() : AppTheme.light(),

@@ -11,6 +11,7 @@ class SimulationRunRequest {
     this.precipChangePct,
     this.tempChangeC,
     this.explain,
+    this.scale = 3,
   });
 
   final String? name;
@@ -27,28 +28,31 @@ class SimulationRunRequest {
   /// e.g. 2 means +2 degC.
   final double? tempChangeC;
   final bool? explain;
+  final int scale;
 
   factory SimulationRunRequest.fromJson(Json j) => SimulationRunRequest(
-        name: strOrNull(j['name']),
-        model: str(j['model'], 'climate_drought_v1'),
-        regionId: str(j['region_id']),
-        referenceFrom: str(j['reference_from']),
-        referenceTo: str(j['reference_to']),
-        precipChangePct: doubleOrNull(j['precip_change_pct']),
-        tempChangeC: doubleOrNull(j['temp_change_c']),
-        explain: j['explain'] == null ? null : boolOf(j['explain']),
-      );
+    name: strOrNull(j['name']),
+    model: str(j['model'], 'climate_drought_v1'),
+    regionId: str(j['region_id']),
+    referenceFrom: str(j['reference_from']),
+    referenceTo: str(j['reference_to']),
+    precipChangePct: doubleOrNull(j['precip_change_pct']),
+    tempChangeC: doubleOrNull(j['temp_change_c']),
+    scale: intOf(j['scale'], 3),
+    explain: j['explain'] == null ? null : boolOf(j['explain']),
+  );
 
   Json toJson() => compact({
-        'name': name,
-        'model': model,
-        'region_id': regionId,
-        'reference_from': referenceFrom,
-        'reference_to': referenceTo,
-        'precip_change_pct': precipChangePct,
-        'temp_change_c': tempChangeC,
-        'explain': explain,
-      });
+    'name': name,
+    'model': model,
+    'region_id': regionId,
+    'reference_from': referenceFrom,
+    'reference_to': referenceTo,
+    'precip_change_pct': precipChangePct,
+    'temp_change_c': tempChangeC,
+    'explain': explain,
+    'scale': scale,
+  });
 }
 
 class SimulationIndicator {
@@ -68,54 +72,61 @@ class SimulationIndicator {
   final double change;
 
   factory SimulationIndicator.fromJson(Json j) => SimulationIndicator(
-        key: str(j['key']),
-        label: str(j['label']),
-        unit: str(j['unit']),
-        reference: doubleOf(j['reference']),
-        scenario: doubleOf(j['scenario']),
-        change: doubleOf(j['change']),
-      );
+    key: str(j['key']),
+    label: str(j['label']),
+    unit: str(j['unit']),
+    reference: doubleOf(j['reference']),
+    scenario: doubleOf(j['scenario']),
+    change: doubleOf(j['change']),
+  );
 
   Json toJson() => {
-        'key': key,
-        'label': label,
-        'unit': unit,
-        'reference': reference,
-        'scenario': scenario,
-        'change': change,
-      };
+    'key': key,
+    'label': label,
+    'unit': unit,
+    'reference': reference,
+    'scenario': scenario,
+    'change': change,
+  };
 }
 
 class SeriesPoint {
   const SeriesPoint({
     required this.month,
-    this.reference = 0,
-    this.scenario = 0,
+    this.reference,
+    this.scenario,
   });
   final String month;
-  final double reference;
-  final double scenario;
+  final double? reference;
+  final double? scenario;
 
   factory SeriesPoint.fromJson(Json j) => SeriesPoint(
-        month: str(j['month']),
-        reference: doubleOf(j['reference']),
-        scenario: doubleOf(j['scenario']),
-      );
-  Json toJson() =>
-      {'month': month, 'reference': reference, 'scenario': scenario};
+    month: str(j['month']),
+    reference: doubleOrNull(j['reference']),
+    scenario: doubleOrNull(j['scenario']),
+  );
+  Json toJson() => {
+    'month': month,
+    'reference': reference,
+    'scenario': scenario,
+  };
 }
 
 class SimulationSeries {
-  const SimulationSeries({required this.key, this.points = const []});
+  const SimulationSeries({required this.key, this.label = '', this.unit = '', this.points = const []});
   final String key;
+  final String label;
+  final String unit;
   final List<SeriesPoint> points;
 
   factory SimulationSeries.fromJson(Json j) => SimulationSeries(
-        key: str(j['key']),
-        points: listOf(j['points'], SeriesPoint.fromJson),
-      );
-  Json toJson() =>
-      {'key': key, 'points': points.map((e) => e.toJson()).toList()};
+    key: str(j['key']),
+    points: listOf(j['points'], SeriesPoint.fromJson),
+  );
+  Json toJson() => {
+    'key': key,
+    'points': points.map((e) => e.toJson()).toList(),
+  };
 }
 
 class SimulationDataSource {
@@ -131,17 +142,17 @@ class SimulationDataSource {
   final double coverage;
 
   factory SimulationDataSource.fromJson(Json j) => SimulationDataSource(
-        dataset: str(j['dataset']),
-        source: str(j['source']),
-        license: str(j['license']),
-        coverage: doubleOf(j['coverage']),
-      );
+    dataset: str(j['dataset']),
+    source: str(j['source']),
+    license: str(j['license']),
+    coverage: doubleOf(j['coverage']),
+  );
   Json toJson() => {
-        'dataset': dataset,
-        'source': source,
-        'license': license,
-        'coverage': coverage,
-      };
+    'dataset': dataset,
+    'source': source,
+    'license': license,
+    'coverage': coverage,
+  };
 }
 
 class SimulationResult {
@@ -180,36 +191,36 @@ class SimulationResult {
   bool get isOk => status == 'ok';
 
   factory SimulationResult.fromJson(Json j) => SimulationResult(
-        id: str(j['id']),
-        scenarioId: str(j['scenario_id']),
-        name: str(j['name']),
-        status: str(j['status'], 'ok'),
-        params: asMap(j['params']),
-        indicators: listOf(j['indicators'], SimulationIndicator.fromJson),
-        series: listOf(j['series'], SimulationSeries.fromJson),
-        dataSources: listOf(j['data_sources'], SimulationDataSource.fromJson),
-        assumptions: stringList(j['assumptions']),
-        limitations: stringList(j['limitations']),
-        insufficientReason: strOrNull(j['insufficient_reason']),
-        narrative: strOrNull(j['narrative']),
-        createdAt: dateOrNull(j['created_at']),
-      );
+    id: str(j['id']),
+    scenarioId: str(j['scenario_id']),
+    name: str(j['name']),
+    status: str(j['status'], 'ok'),
+    params: asMap(j['params']),
+    indicators: listOf(j['indicators'], SimulationIndicator.fromJson),
+    series: listOf(j['series'], SimulationSeries.fromJson),
+    dataSources: listOf(j['data_sources'], SimulationDataSource.fromJson),
+    assumptions: stringList(j['assumptions']),
+    limitations: stringList(j['limitations']),
+    insufficientReason: strOrNull(j['insufficient_reason']),
+    narrative: strOrNull(j['narrative']),
+    createdAt: dateOrNull(j['created_at']),
+  );
 
   Json toJson() => {
-        'id': id,
-        'scenario_id': scenarioId,
-        'name': name,
-        'status': status,
-        'params': params,
-        'indicators': indicators.map((e) => e.toJson()).toList(),
-        'series': series.map((e) => e.toJson()).toList(),
-        'data_sources': dataSources.map((e) => e.toJson()).toList(),
-        'assumptions': assumptions,
-        'limitations': limitations,
-        'insufficient_reason': insufficientReason,
-        'narrative': narrative,
-        'created_at': isoOrNull(createdAt),
-      };
+    'id': id,
+    'scenario_id': scenarioId,
+    'name': name,
+    'status': status,
+    'params': params,
+    'indicators': indicators.map((e) => e.toJson()).toList(),
+    'series': series.map((e) => e.toJson()).toList(),
+    'data_sources': dataSources.map((e) => e.toJson()).toList(),
+    'assumptions': assumptions,
+    'limitations': limitations,
+    'insufficient_reason': insufficientReason,
+    'narrative': narrative,
+    'created_at': isoOrNull(createdAt),
+  };
 }
 
 class EnvironmentPoint {
@@ -238,15 +249,15 @@ class EnvironmentSeries {
   final List<EnvironmentPoint> points;
 
   factory EnvironmentSeries.fromJson(Json j) => EnvironmentSeries(
-        dataset: str(j['dataset']),
-        unit: str(j['unit']),
-        coverage: doubleOf(j['coverage']),
-        points: listOf(j['points'], EnvironmentPoint.fromJson),
-      );
+    dataset: str(j['dataset']),
+    unit: str(j['unit']),
+    coverage: doubleOf(j['coverage']),
+    points: listOf(j['points'], EnvironmentPoint.fromJson),
+  );
   Json toJson() => {
-        'dataset': dataset,
-        'unit': unit,
-        'coverage': coverage,
-        'points': points.map((e) => e.toJson()).toList(),
-      };
+    'dataset': dataset,
+    'unit': unit,
+    'coverage': coverage,
+    'points': points.map((e) => e.toJson()).toList(),
+  };
 }

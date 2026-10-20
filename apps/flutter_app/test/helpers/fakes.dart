@@ -4,6 +4,8 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:eco_terminal/app.dart';
+import 'package:eco_terminal/features/observations/data/draft_queue.dart';
+import 'package:eco_terminal/features/observations/data/draft_store.dart';
 import 'package:eco_terminal/core/api/api_client.dart';
 import 'package:eco_terminal/core/api/providers.dart';
 import 'package:eco_terminal/core/extensions/extension_registry.dart';
@@ -88,15 +90,15 @@ class FakeLocation implements LocationService {
 }
 
 Map<String, dynamic> userJson({String role = 'citizen'}) => {
-      'id': 'u1',
-      'email': 'ayse@example.com',
-      'role': role,
-      'status': 'active',
-      'display_name': 'Ayşe',
-      'locale': 'tr',
-      'location_consent': false,
-      'created_at': '2026-01-01T00:00:00Z',
-    };
+  'id': 'u1',
+  'email': 'ayse@example.com',
+  'role': role,
+  'status': 'active',
+  'display_name': 'Ayşe',
+  'locale': 'tr',
+  'location_consent': false,
+  'created_at': '2026-01-01T00:00:00Z',
+};
 
 /// Standard public routes with empty data.
 FakeAdapter emptyApi() => FakeAdapter()
@@ -114,26 +116,27 @@ List<Override> baseOverrides(
   FakeAdapter adapter, {
   String? token,
   ExtensionRegistry? registry,
+  DraftStore? draftStore,
 }) {
   return [
     tokenStoreProvider.overrideWithValue(MemoryTokenStore(token)),
+    draftStoreProvider.overrideWithValue(draftStore ?? MemoryDraftStore()),
     tileProviderProvider.overrideWithValue(BlankTileProvider()),
     locationServiceProvider.overrideWithValue(FakeLocation()),
-    if (registry != null)
-      extensionRegistryProvider.overrideWithValue(registry),
+    if (registry != null) extensionRegistryProvider.overrideWithValue(registry),
     apiClientProvider.overrideWith((ref) => makeTestClient(ref, adapter)),
   ];
 }
 
 /// Same wiring as the real [apiClientProvider], with the fake adapter.
 ApiClient makeTestClient(Ref ref, FakeAdapter adapter) => ApiClient(
-      config: ref.watch(appConfigProvider),
-      adapter: adapter,
-      tokenReader: () => ref.read(sessionProvider).token,
-      onUnauthorized: () => ref.read(sessionProvider.notifier).handleUnauthorized(),
-      onConnectivity: (online) =>
-          ref.read(networkOnlineProvider.notifier).set(online),
-    );
+  config: ref.watch(appConfigProvider),
+  adapter: adapter,
+  tokenReader: () => ref.read(sessionProvider).token,
+  onUnauthorized: () => ref.read(sessionProvider.notifier).handleUnauthorized(),
+  onConnectivity: (online) =>
+      ref.read(networkOnlineProvider.notifier).set(online),
+);
 
 /// Pumps the whole app (router, shell, providers) at [size].
 Future<ProviderContainer> pumpApp(
@@ -170,4 +173,16 @@ Future<ProviderContainer> pumpApp(
   await tester.pump(const Duration(milliseconds: 100));
   await tester.pump(const Duration(milliseconds: 100));
   return container;
+}
+
+class MemoryDraftStore implements DraftStore {
+  final Map<String, String> records = {};
+  bool failWrite = false;
+  @override
+  Future<String?> read(String owner) async => records[owner];
+  @override
+  Future<void> write(String owner, String json) async {
+    if (failWrite) throw StateError('disk full');
+    records[owner] = json;
+  }
 }

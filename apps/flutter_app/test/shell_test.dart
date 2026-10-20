@@ -21,7 +21,7 @@ void main() {
   group('responsive shell', () {
     testWidgets('desktop (1400): resizable panel with 5 tabs next to the map',
         (tester) async {
-      await pumpApp(tester, size: const Size(1400, 900));
+      await pumpApp(tester, size: const Size(1400, 900), registry: ExtensionRegistry());
       expect(find.byKey(const ValueKey('desktop-panel')), findsOneWidget);
       expect(find.byKey(const ValueKey('panel-resize-handle')), findsOneWidget);
       expect(find.byType(NavigationBar), findsNothing);

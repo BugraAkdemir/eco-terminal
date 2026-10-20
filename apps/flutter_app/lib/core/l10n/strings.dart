@@ -22,7 +22,7 @@ class AppStrings {
   String pick(String tr, String en) => isTr ? tr : en;
 
   // --- App / generic -------------------------------------------------------
-  String get appName => 'Eco Terminal';
+  String get appName => 'Bio Radar';
   String get appTagline => pick(
         'Kastamonu biyolojik çeşitlilik izleme platformu',
         'Kastamonu biodiversity monitoring platform',

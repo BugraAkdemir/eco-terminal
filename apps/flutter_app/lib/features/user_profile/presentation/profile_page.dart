@@ -136,6 +136,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         child: ListView(
           padding: const EdgeInsets.all(Dimens.lg),
           children: [
+            ListTile(
+              leading: const Icon(Icons.cloud_upload_outlined),
+              title: Text(
+                s.pick(
+                  'Cihazdaki saha kayıtları',
+                  'Field records on this device',
+                ),
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.go('/field-queue'),
+            ),
             SolidPanel(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -160,7 +171,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     ),
                   ),
                   const Divider(height: Dimens.xxl),
-                  Text(s.language, style: Theme.of(context).textTheme.labelLarge),
+                  Text(
+                    s.language,
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
                   const SizedBox(height: Dimens.sm),
                   SegmentedButton<String>(
                     key: const ValueKey('profile-locale'),
@@ -243,7 +257,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   SectionHeader(title: s.dangerZone),
                   OutlinedButton.icon(
                     key: const ValueKey('profile-logout'),
-                    onPressed: () => ref.read(sessionProvider.notifier).logout(),
+                    onPressed: () =>
+                        ref.read(sessionProvider.notifier).logout(),
                     icon: const Icon(Icons.logout),
                     label: Text(s.logout),
                   ),
