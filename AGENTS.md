@@ -100,10 +100,15 @@ Henüz release süreci tanımlı değil.
 - ~~Flutter merge sonrası `flutter analyze` hata veriyordu: main'de kalan şablon `test/widget_test.dart`, B branch'inde bulunmayan ve artık var olmayan `MyApp` sayaç uygulamasını çağırıyordu.~~ → fixed 2026-10-20 (`4161ff2`): eski şablon kaldırıldı; gerçek uygulamanın açılışı ve responsive kabuğu `shell_test.dart` kapsamında doğrulanıyor.
 - ~~Atkinson Hyperlegible'ın ilk sürümünde U+0130 (`İ`) yok; gövde metninde Türkçe büyük İ sistem fontuna düşüyordu.~~ → fixed 2026-10-20 (`4161ff2`): tüm Türkçe glifleri içeren Atkinson Hyperlegible Next, Fraunces ve IBM Plex Mono lisanslarıyla gömüldü; font dosyaları değiştirilmedi.
 
+### Field capture / presentation
+
+- ~~Flutter simülasyon modeli eksik aylık ölçümleri null yerine 0 okuyordu; grafikler veri olmayan ayı ölçülmüş sıfır gibi gösterebilirdi.~~ → fixed 2026-10-20 (C/F commit’i): seri noktaları nullable; grafikte eksik aylar boşluk olarak çiziliyor, gerçek sıfır korunuyor. Regresyon testi var.
+- ~~Demo seed herhangi bir demo satırı gördüğünde dönüyordu; güncellemeyle eklenen tanıtım kayıtları eski demo veritabanına gelmiyordu.~~ → fixed 2026-10-20 (`b26bec7`): sabit client_ref başına kontrol; mevcut düzenlemeler korunurken yalnız yeni örnekler ekleniyor.
+
 ### Intelligence worker (`backend/internal/rag/`, `jobs/`)
 
-- ~~İki job aynı kaydı ilk kez indekslerken `UNIQUE constraint failed: rag_documents.source_type, rag_documents.source_id` hatası ve gereksiz retry oluşuyordu: `upsertDocument` belge varlığını embedding öncesinde okuyup transaction içinde tekrar kontrol etmiyordu.~~ → fixed 2026-10-20 (D2 commit’i): BEGIN IMMEDIATE sonrasında belge kimliği/hash yeniden okunuyor; embedding ağ çağrısı transaction dışında kalıyor. İki işçiyi embedding aşamasında buluşturan regresyon testi var.
-- ~~AI işçisinin submitted → ai_processed geçişi history yazmasına rağmen audit_logs kaydı oluşturmuyordu.~~ → fixed 2026-10-20 (D2 commit’i): analiz sonucu ve durum geçişinin audit kaydı aynı transaction'a alındı.
+- ~~İki job aynı kaydı ilk kez indekslerken `UNIQUE constraint failed: rag_documents.source_type, rag_documents.source_id` hatası ve gereksiz retry oluşuyordu: `upsertDocument` belge varlığını embedding öncesinde okuyup transaction içinde tekrar kontrol etmiyordu.~~ → fixed 2026-10-20 (`491a200`): BEGIN IMMEDIATE sonrasında belge kimliği/hash yeniden okunuyor; embedding ağ çağrısı transaction dışında kalıyor. İki işçiyi embedding aşamasında buluşturan regresyon testi var.
+- ~~AI işçisinin submitted → ai_processed geçişi history yazmasına rağmen audit_logs kaydı oluşturmuyordu.~~ → fixed 2026-10-20 (`491a200`): analiz sonucu ve durum geçişinin audit kaydı aynı transaction'a alındı.
 
 ---
 

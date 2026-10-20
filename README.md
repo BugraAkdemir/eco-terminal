@@ -26,6 +26,7 @@ scripts/            helper scripts (e2e)
 ## Run (development)
 ```bash
 cp .env.example .env            # set ECO_ADMIN_EMAIL / ECO_ADMIN_PASSWORD; AI keys are optional
+set -a; source .env; set +a     # export runtime settings
 cd backend && make run          # http://localhost:8080/api/v1/health
 cd apps/flutter_app && flutter run -d linux --dart-define=API_BASE_URL=http://localhost:8080/api/v1
 ```
@@ -43,6 +44,7 @@ Verified on Linux (backend + Linux desktop app). Windows, macOS, iOS, Android an
 **not built/tested** in the current development environment.
 
 ## Docs
+[Türkçe sunum ve kullanım rehberi](docs/DEMO.md), [veri kaynakları](docs/DATA_SOURCES.md),
 `docs/architecture/ARCHITECTURE.md`, `docs/DATABASE.md`, `docs/api/openapi.yaml`, `docs/architecture/vector-store.md`;
 data sources and simulation docs are added under `docs/data_sources/` and `docs/simulations/`.
 

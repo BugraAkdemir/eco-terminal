@@ -110,3 +110,9 @@ Fonts: Fraunces (headings), Atkinson Hyperlegible Next (body/UI; keeps the `Atki
 ## Known gaps
 
 Observation wizard, expert dashboard, AI assistant, official feeds and simulation screens are other modules (extension slots above). Custom region drawing (stretch goal) is not implemented. The list view next to the map is the Observations tab (mobile: "Liste" button).
+
+## Implemented feature modules (Bio Radar)
+
+`app_extensions.dart` registers the six-step field wizard, `/field-queue`, reviewer desk and assistant/feed/scenario tabs. The profile links to the local queue. ObservationCreate sends `client_ref`; partial media upload progress survives restart. Queue storage is scoped by account, native JSON is written via flush + atomic rename in app support storage, web uses checked browser preferences. Retry uses bounded exponential backoff while the app is open; logout prevents another account sending the previous account's records. Photos are retained until all uploads succeed; save failures are visible.
+
+The assistant passes selected region/dates and renders sources, SQL summaries and unverified AI labels. Feeds show source health and original links. Scenarios call the real API, retain missing climate points as chart gaps, show units, assumptions and attribution, and compare stored scenarios. Analytics charts remain in the existing Information tab. Native window and platform display names are Bio Radar; package IDs, binary name and ECO_* server variables remain stable.

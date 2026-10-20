@@ -29,7 +29,7 @@ trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 READY=false
-for ((i=0;i<200;i++)); do
+for ((i=0;i<1200;i++)); do
   if ! kill -0 "$API_PID" 2>/dev/null; then cat "$LOG" >&2; exit 1; fi
   if curl -fsS --max-time 1 "$BASE/health" >/dev/null 2>&1; then READY=true; break; fi
   sleep 0.1
@@ -37,6 +37,8 @@ done
 if [ "$READY" != true ]; then tail -30 "$LOG" >&2; echo 'API did not become ready.' >&2; exit 1; fi
 source "$ROOT/backend/data/presentation/login.env"
 printf '\nBio Radar hazır · 30 demo kayıt\nGiriş: %s\nŞifre: %s\n\n' "$ECO_ADMIN_EMAIL" "$ECO_ADMIN_PASSWORD"
+# Server configuration stays in the API process, never in the Flutter process.
+unset ECO_ADMIN_EMAIL ECO_ADMIN_PASSWORD ECO_AI_API_KEY ECO_AI_BASE_URL ECO_AI_TEXT_MODEL ECO_AI_VISION_MODEL ECO_AI_EMBEDDING_MODEL ECO_AI_EMBEDDING_DIM
 cd "$ROOT/apps/flutter_app"
 flutter pub get
 flutter build linux --dart-define="API_BASE_URL=$BASE"
