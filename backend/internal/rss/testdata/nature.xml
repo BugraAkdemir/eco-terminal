@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<rss version="2.0">
+    <channel>
+        <title>Biodiversity : nature.com subject feeds</title>
+        <link>https://www.nature.com/subjects/biodiversity</link>
+        <description>Latest news and research from Nature.com on the topic of Biodiversity</description>
+        <ttl>60</ttl>
+        <pubDate>Tue, 20 Oct 2026 10:10:31 +0000</pubDate>
+        <lastBuildDate>Tue, 20 Oct 2026 10:10:31 +0000</lastBuildDate>
+        
+            <item>
+                <title>Nobel-prizewinning breakthroughs can emerge from neglected organisms</title>
+                <pubDate>Tue, 20 Oct 2026 00:00:00 +0000</pubDate>
+                <link>https://www.nature.com/articles/d41586-026-03351-1</link>
+                <description/>
+                <guid>https://www.nature.com/articles/d41586-026-03351-1</guid>
+            </item>
+        
+            <item>
+                <title>Conservation planning should follow animal clocks</title>
+                <pubDate>Tue, 20 Oct 2026 00:00:00 +0000</pubDate>
+                <link>https://www.nature.com/articles/d41586-026-03354-y</link>
+                <description/>
+                <guid>https://www.nature.com/articles/d41586-026-03354-y</guid>
+            </item>
+        
+            <item>
+                <title>Biodiversity-inclusive spatial planning underpins the achievement of global biodiversity targets</title>
+                <pubDate>Tue, 20 Oct 2026 00:00:00 +0000</pubDate>
+                <link>https://www.nature.com/articles/s44358-026-00212-7</link>
+                <description/>
+                <guid>https://www.nature.com/articles/s44358-026-00212-7</guid>
+            </item>
+        
+    </channel>
+</rss>

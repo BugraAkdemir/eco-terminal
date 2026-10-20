@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:og="http://ogp.me/ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:schema="http://schema.org/" xmlns:sioc="http://rdfs.org/sioc/ns#" xmlns:sioct="http://rdfs.org/sioc/types#" xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#" version="2.0" xml:base="http://bilimgenc.tubitak.gov.tr/">
+  <channel>
+    <title>TÜBİTAK Bilim Genç</title>
+    <link>http://bilimgenc.tubitak.gov.tr/</link>
+    <description/>
+    <language>tr</language>
+    
+    <item>
+  <title>Uranus'ün Eksen Eğikliği</title>
+  <link>http://bilimgenc.tubitak.gov.tr/bunu-biliyor-muydunuz/uranusun-eksen-egikligi</link>
+  <description>&lt;span class="field field--name-title field--type-string field--label-hidden"&gt;Uranus'ün Eksen Eğikliği&lt;/span&gt;
+
+      &lt;div class="field field--name-field-makale-gorseli field--type-image field--label-hidden field__items"&gt;
+              &lt;div class="field__item"&gt;/sites/default/files/bunu_biliyor_muydunuz_uranus_yyeni.jpg&lt;/div&gt;
+          &lt;/div&gt;
+  &lt;span class="field field--name-uid field--type-entity-reference field--label-hidden"&gt;&lt;span lang about="http://bilimgenc.tubitak.gov.tr/users/bilimgenc-0" typeof="schema:Person" property="schema:name" datatype&gt;Bilim.Genç&lt;/span&gt;&lt;/span&gt;
+&lt;span class="field field--name-created field--type-created field--label-hidden"&gt;&lt;time datetime="2017-07-28T09:49:58+03:00" title="Cuma, Temmuz 28, 2017 - 09:49 [+03:0009+03:00 31ööFri, 28 Jul 2017 09:49:58 +03004909 b49ç490749]" class="datetime"&gt;Cu, 07/28/2017 - 09:49&lt;/time&gt;
+&lt;/span&gt;
+&lt;section class="field field--name-field-comment field--type-comment field--label-above comment-wrapper"&gt;
+  
+  
+
+  
+&lt;/section&gt;
+
+  &lt;div class="clearfix text-formatted field field--name-body field--type-text-with-summary field--label-above"&gt;
+    &lt;div class="field__label"&gt;Body&lt;/div&gt;
+              &lt;div class="field__item"&gt;&lt;p&gt;Bu nedenle Uranüs Güneş Sistemi'ndeki en sıra dışı mevsimlere sahip gezegendir.Uranüs'ün kutuplarından biri 21 yıl (Uranüs'ün bir yılının dörtte biri) boyunca güneş ışınlarını doğrudan alırken diğer kutbu karanlık ve dondurucu kışı yaşar.&lt;/p&gt;
+&lt;/div&gt;
+          &lt;/div&gt;
+</description>
+  <pubDate>Fri, 28 Jul 2017 06:49:58 +0000</pubDate>
+    <dc:creator>Bilim.Genç</dc:creator>
+    <guid isPermaLink="false">8308 at http://bilimgenc.tubitak.gov.tr</guid>
+    <comments>http://bilimgenc.tubitak.gov.tr/bunu-biliyor-muydunuz/uranusun-eksen-egikligi#comments</comments>
+    </item>
+<item>
+  <title>2027 Türkiye Bilim İletişimi Zirvesi Ev Sahipliği Başvuruları Başladı!</title>
+  <link>http://bilimgenc.tubitak.gov.tr/makale/2027-turkiye-bilim-iletisimi-zirvesi-ev-sahipligi-basvurulari-basladi</link>
+  <description>&lt;span class="field field--name-title field--type-string field--label-hidden"&gt;2027 Türkiye Bilim İletişimi Zirvesi Ev Sahipliği Başvuruları Başladı!&lt;/span&gt;
+
+  &lt;div class="field field--name-field-kose field--type-entity-reference field--label-inline clearfix"&gt;
+    &lt;div class="field__label"&gt;Köşe&lt;/div&gt;
+              &lt;div class="field__item"&gt;&lt;a href="http://bilimgenc.tubitak.gov.tr/koselerimiz/duyurular" hreflang="tr"&gt;Duyurular&lt;/a&gt;&lt;/div&gt;
+          &lt;/div&gt;
+&lt;span class="field field--name-uid field--type-entity-reference field--label-hidden"&gt;&lt;span lang about="http://bilimgenc.tubitak.gov.tr/users/rizaaycelebi" typeof="schema:Person" property="schema:name" datatype&gt;riza.aycelebi&lt;/span&gt;&lt;/span&gt;
+&lt;span class="field field--name-created field--type-created field--label-hidden"&gt;&lt;time datetime="2026-10-16T09:26:55+03:00" title="Cuma, Ekim 16, 2026 - 09:26 [+03:0009+03:00 31ööFri, 16 Oct 2026 09:26:55 +03002609 b26ç261026]" class="datetime"&gt;Cu, 10/16/2026 - 09:26&lt;/time&gt;
+&lt;/span&gt;
+
+  &lt;div class="field field--name-field-tags field--type-entity-reference field--label-inline clearfix"&gt;
+    &lt;div class="field__label"&gt;Konu&lt;/div&gt;
+          &lt;div class="field__items"&gt;
+              &lt;div class="field__item"&gt;&lt;a href="http://bilimgenc.tubitak.gov.tr/konular/bilim-iletisimi" hreflang="tr"&gt;Bilim İletişimi&lt;/a&gt;&lt;/div&gt;
+          &lt;div class="field__item"&gt;&lt;a href="http://bilimgenc.tubitak.gov.tr/konular/tubitak" hreflang="tr"&gt;TÜBİTAK&lt;/a&gt;&lt;/div&gt;
+              &lt;/div&gt;
+      &lt;/div&gt;
+
+            &lt;div class="field field--name-field-yazar field--type-string field--label-hidden field__item"&gt;Bilim Genç&lt;/div&gt;
+      
+  &lt;div class="field field--name-field-makale-gorseli field--type-image field--label-inline clearfix"&gt;
+    &lt;div class="field__label"&gt;Makale Görseli&lt;/div&gt;
+          &lt;div class="field__items"&gt;
+              &lt;div class="field__item"&gt;/sites/default/files/styles/bp-770px-custom_user_desktop_1x/public/bilim-iletisimi-zirvesi-basvurulari-2027.webp?itok=BmbUIC7P&lt;/div&gt;
+              &lt;/div&gt;
+      &lt;/div&gt;
+
+            &lt;div class="clearfix text-formatted field field--name-body field--type-text-with-summary field--label-hidden field__item"&gt;&lt;p data-pm-slice="1 1 []"&gt;TÜBİTAK yürütücülüğünde, Orta Doğu Teknik Üniversitesi (ODTÜ) ev sahipliğinde 14–15 Ekim 2026 tarihlerinde Ankara’da gerçekleştirilen Türkiye Bilim İletişimi Zirvesi, 2027 yılında farklı bir üniversitenin ev sahipliğinde düzenlenecek.&lt;/p&gt;
+&lt;p&gt;Bilim insanlarını, bilim iletişimcilerini, eğitimcileri ve farklı kurumların temsilcilerini bir araya getiren zirve, bilim iletişimi alanındaki deneyimlerin paylaşılmasına ve kurumlar arasındaki iş birliğinin geliştirilmesine katkı sağlıyor.&lt;/p&gt;
+&lt;p&gt;2027 Türkiye Bilim İletişimi Zirvesi’ne ev sahipliği yapmak isteyen üniversiteler, başvuru koşullarını inceleyerek 31 Aralık 2026 tarihine kadar çevrim içi başvuru formunu doldurabilir.&lt;/p&gt;
+&lt;div id="zirve2027-basvuru"&gt;
+&lt;div class="z27-info"&gt;&lt;span class="z27-badge"&gt;BAŞVURULAR AÇIK&lt;/span&gt; &lt;strong class="z27-title"&gt;2027 Türkiye Bilim İletişimi Zirvesi&lt;/strong&gt; &lt;span class="z27-desc"&gt;Ev sahipliği başvuruları: 16 Ekim–31 Aralık 2026&lt;/span&gt;&lt;/div&gt;
+&lt;div class="z27-action"&gt;
+&lt;div aria-label="Başvuruların kapanmasına kalan süre" class="z27-counter" role="timer"&gt;
+&lt;div class="z27-unit"&gt;&lt;b data-z27="days"&gt;—&lt;/b&gt;&lt;span&gt;Gün&lt;/span&gt;&lt;/div&gt;
+&lt;div class="z27-unit"&gt;&lt;b data-z27="hours"&gt;—&lt;/b&gt;&lt;span&gt;Saat&lt;/span&gt;&lt;/div&gt;
+&lt;div class="z27-unit"&gt;&lt;b data-z27="minutes"&gt;—&lt;/b&gt;&lt;span&gt;Dakika&lt;/span&gt;&lt;/div&gt;
+&lt;div class="z27-unit"&gt;&lt;b data-z27="seconds"&gt;—&lt;/b&gt;&lt;span&gt;Saniye&lt;/span&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;a class="z27-button" href="https://bilimgenc.tubitak.gov.tr/bilim-iletisimi-zirvesi-talep-formu" style="color:white!important"&gt;Başvuru Yap &lt;span aria-hidden="true"&gt;↗&lt;/span&gt; &lt;/a&gt;&lt;/p&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;style type="text/css"&gt;#zirve2027-basvuru,
+  #zirve2027-basvuru * {
+    box-sizing: border-box;
+  }
+
+  #zirve2027-basvuru {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    width: 100%;
+    margin: 20px 0;
+    padding: 22px;
+    border: 1px solid #dce8ef;
+    border-radius: 16px;
+    background: linear-gradient(115deg, #f0f7fb, #ffffff);
+    color: #15334a;
+    font-family: inherit;
+    line-height: 1.5;
+    text-align: left;
+    box-shadow: 0 6px 22px rgba(21, 51, 74, .05);
+  }
+
+  #zirve2027-basvuru .z27-info {
+    display: flex;
+    flex: 1 1 280px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+  }
+
+  #zirve2027-basvuru .z27-badge {
+    display: inline-block;
+    padding: 4px 9px;
+    border-radius: 6px;
+    background: #e1f3e9;
+    color: #176b42;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .7px;
+  }
+
+  #zirve2027-basvuru .z27-title {
+    display: block;
+    margin: 0;
+    color: #15334a;
+    font-size: 18px;
+    font-weight: 750;
+    line-height: 1.35;
+  }
+
+  #zirve2027-basvuru .z27-desc {
+    color: #526878;
+    font-size: 13px;
+  }
+
+  #zirve2027-basvuru .z27-action {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+  }
+
+  #zirve2027-basvuru .z27-counter {
+    display: flex;
+    gap: 6px;
+  }
+
+  #zirve2027-basvuru .z27-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 49px;
+    padding: 7px 6px;
+    border: 1px solid #e1eaf0;
+    border-radius: 9px;
+    background: #fff;
+  }
+
+  #zirve2027-basvuru .z27-unit b {
+    color: #15334a;
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #zirve2027-basvuru .z27-unit span {
+    margin-top: 3px;
+    color: #607484;
+    font-size: 10px;
+  }
+
+  #zirve2027-basvuru a.z27-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 44px;
+    margin: 0;
+    padding: 11px 18px;
+    border: 1px solid #176b8c;
+    border-radius: 9px;
+    background: #176b8c;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.4;
+    text-decoration: none;
+    box-shadow: none;
+    transition: background .2s;
+  }
+
+  #zirve2027-basvuru a.z27-button:hover {
+    border-color: #10516c;
+    background: #10516c;
+    color: #fff;
+    text-decoration: none;
+  }
+
+  #zirve2027-basvuru a.z27-button:focus-visible {
+    outline: 3px solid #edac42;
+    outline-offset: 3px;
+  }
+
+  #zirve2027-basvuru .z27-status {
+    color: #526878;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  @media (max-width: 560px) {
+    #zirve2027-basvuru {
+      gap: 16px;
+      padding: 18px;
+    }
+
+    #zirve2027-basvuru .z27-action {
+      width: 100%;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    #zirve2027-basvuru .z27-title {
+      font-size: 17px;
+    }
+  }
+&lt;/style&gt;&lt;script&gt;
+(function () {
+  var root = document.getElementById("zirve2027-basvuru");
+  if (!root || root.dataset.z27Ready) return;
+  root.dataset.z27Ready = "true";
+
+  var start = Date.parse("2026-10-16T00:00:00+03:00");
+  var end = Date.parse("2027-01-01T00:00:00+03:00");
+  var badge = root.querySelector(".z27-badge");
+  var counter = root.querySelector(".z27-counter");
+  var button = root.querySelector(".z27-button");
+  var timer;
+
+  function update() {
+    var now = Date.now();
+    var beforeStart = now &lt; start;
+    var remaining = Math.max(0, Math.floor(
+      ((beforeStart ? start : end) - now) / 1000
+    ));
+
+    if (now &gt;= end) {
+      badge.textContent = "BAŞVURULAR SONA ERDİ";
+      counter.removeAttribute("role");
+      counter.removeAttribute("aria-label");
+      counter.className = "z27-status";
+      counter.textContent = "Başvuru süresi dolmuştur.";
+      button.textContent = "Başvuru Bilgileri ↗";
+      if (timer) clearInterval(timer);
+      return;
+    }
+
+    badge.textContent = beforeStart
+      ? "BAŞVURULAR 16 EKİM’DE BAŞLIYOR"
+      : "BAŞVURULAR AÇIK";
+
+    counter.setAttribute("aria-label", beforeStart
+      ? "Başvuruların başlamasına kalan süre"
+      : "Başvuruların kapanmasına kalan süre");
+
+    button.textContent = beforeStart
+      ? "Başvuru Koşulları ↗"
+      : "Başvuru Yap ↗";
+
+    var values = {
+      days: Math.floor(remaining / 86400),
+      hours: Math.floor(remaining % 86400 / 3600),
+      minutes: Math.floor(remaining % 3600 / 60),
+      seconds: remaining % 60
+    };
+
+    Object.keys(values).forEach(function (key) {
+      root.querySelector('[data-z27="' + key + '"]').textContent =
+        String(values[key]).padStart(2, "0");
+    });
+  }
+
+  update();
+  if (Date.now() &lt; end) timer = setInterval(update, 1000);
+})();
+&lt;/script&gt;&lt;/div&gt;
+      &lt;section class="field field--name-field-comment field--type-comment field--label-above comment-wrapper"&gt;
+  
+  
+
+  
+&lt;/section&gt;
+</description>
+  <pubDate>Fri, 16 Oct 2026 06:26:55 +0000</pubDate>
+    <dc:creator>riza.aycelebi</dc:creator>
+    <guid isPermaLink="false">44988 at http://bilimgenc.tubitak.gov.tr</guid>
+    <comments>http://bilimgenc.tubitak.gov.tr/makale/2027-turkiye-bilim-iletisimi-zirvesi-ev-sahipligi-basvurulari-basladi#comments</comments>
+    </item>
+<item>
+  <title>Zirve taahütname</title>
+  <link>http://bilimgenc.tubitak.gov.tr/node/44987</link>
+  <description>&lt;span class="field field--name-title field--type-string field--label-hidden"&gt;Zirve taahütname&lt;/span&gt;
+&lt;span class="field field--name-uid field--type-entity-reference field--label-hidden"&gt;&lt;span lang about="http://bilimgenc.tubitak.gov.tr/users/rizaaycelebi" typeof="schema:Person" property="schema:name" datatype&gt;riza.aycelebi&lt;/span&gt;&lt;/span&gt;
+&lt;span class="field field--name-created field--type-created field--label-hidden"&gt;&lt;time datetime="2026-10-14T07:44:03+03:00" title="Çarşamba, Ekim 14, 2026 - 07:44 [+03:0007+03:00 31ööWed, 14 Oct 2026 07:44:03 +03004407 b44ç441044]" class="datetime"&gt;Çar, 10/14/2026 - 07:44&lt;/time&gt;
+&lt;/span&gt;
+
+  &lt;div class="field field--name-field-dosyalar field--type-file field--label-above"&gt;
+    &lt;div class="field__label"&gt;Dosya&lt;/div&gt;
+          &lt;div class="field__items"&gt;
+              &lt;div class="field__item"&gt;
+&lt;span class="file file--mime-application-pdf file--application-pdf"&gt;&lt;a href="http://bilimgenc.tubitak.gov.tr/sites/default/files/Taahhutname_ev_sahipligi.pdf" type="application/pdf"&gt;Taahhutname_ev_sahipligi.pdf&lt;/a&gt; &lt;span class="file__size"&gt;(167.56 KB)&lt;/span&gt;&lt;/span&gt;
+&lt;/div&gt;
+              &lt;/div&gt;
+      &lt;/div&gt;
+</description>
+  <pubDate>Wed, 14 Oct 2026 04:44:03 +0000</pubDate>
+    <dc:creator>riza.aycelebi</dc:creator>
+    <guid isPermaLink="false">44987 at http://bilimgenc.tubitak.gov.tr</guid>
+    </item>
+
+  </channel>
+</rss>
