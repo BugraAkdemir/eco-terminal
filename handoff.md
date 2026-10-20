@@ -88,6 +88,19 @@ Dağda/köyde sinyal yokken çekilen gözlemler telefonda saklanıp internet gel
 Backend tarafı A'ya iletildi (migration `0002_client_ref.sql` + OpenAPI güncellemesi izinli tek istisna). Flutter kuyruğu C ajanında
 (sihirbaz ile birlikte). Çevrimdışı harita karo paketi: stretch.
 
+### 3b. Durum anlık görüntüsü (~22 dk çalışma sonrası, ölçüm: dosya/commit sayımı)
+| Ajan | Commit | Kod | Not |
+|------|--------|-----|-----|
+| A backend-core | 3 | ~5.300 satır Go (temel hariç), 10 paketin hepsi mevcut | Testler az (2 test dosyası) — test yazımı bekleniyor; e2e henüz yok |
+| B flutter-foundation | **0** | ~9.200 satır Dart | Hiç commit atmadı (kurala aykırı); tasarım yönergesi (`docs/architecture/design.md`) mesajla iletildi |
+| D1 intelligence | 1 | ~3.800 satır Go; `ai`, `rag`, `rss` paketleri var | 5 test dosyası; `jobs` paketi henüz görünmüyor |
+| E1 simulation | 2 | ~5.300 satır Go; `simulation` paketi | 7 test dosyası |
+Genel ilerleme tahmini: **~%35** (ölçüm değil). Hepsi hâlâ çalışıyor, hiçbiri final rapor vermedi.
+
+### 3c. Tasarım yönergesi
+`docs/architecture/design.md` ("Saha Atlası"): kullanım kolaylığı önce; sade Türkçe, 48dp+ dokunma alanı, çevrimdışı durum görünür, durum etiketleri ikon+yazı,
+AI çıktısı "doğrulanmadı" etiketli, Fraunces + Atkinson Hyperlegible + IBM Plex Mono (gömülü), %200 yazı boyutu testi. B'ye iletildi; C/F ajanları da buna uyacak.
+
 ### 4. Bilinen sorunlar / gözlemler
 - A ve B worktree'leri yanlışlıkla eski `7f6c707` commit'inden açıldı (D1/E1 doğru). A temel dosyaları kopyalayarak toparladı; merge'de yalnız ajanların kendi dizinleri alınacak.
 - A'nın `httpx/audit/password` kodu okundu: ciddi bulgu yok. Merge'de bakılacaklar: genel `BodyLimit` vs medya limiti, reverse-proxy arkasında tek-IP rate limit,
@@ -103,7 +116,7 @@ D1/E1 HTTP handler'ları (A merge olunca faz 2).
 
 Plan: `plan.md` (repo kökü) — tüm fazlar ve işaretli ilerleme orada.
 
-İlerleme tahmini (ölçüm değil): proje ~%20; A ~%30, B ~%35, E1 ~%35, D1 ~%10 (ajanlar henüz commit atmadı).
+İlerleme tahmini (ölçüm değil): proje ~%35 (22 dk sonra); ayrıntı yukarıda 3b.
 
 Faz 0: `cd backend && go test -tags "sqlite_fts5 sqlite_rtree" -race ./...` → `ok .../internal/storage 1.019s`; `go vet` temiz;
 `sqlite3 < 0001_init.sql` hatasız (98 şema nesnesi); openapi.yaml YAML olarak geçerli (31 path, 25 schema).
