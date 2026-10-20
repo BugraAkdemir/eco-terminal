@@ -48,8 +48,8 @@ Kullanıcının "Master Development Prompt"u (tam Eco Terminal) ile geliştirme 
 (kapsam: P0+P1+tek simülasyon; AI: OpenAI-uyumlu env adaptörü; commit'lerde AI-attribution YOK).
 Faz 0 (temel + sözleşmeler) bitti ve commit'lendi; Faz 1'de 4 ajan kendi git worktree'lerinde paralel çalışıyor.
 
-**Commit status:** `1bfe114` (main) — monorepo iskeleti, `0001_init.sql`, `docs/api/openapi.yaml`,
-`backend/internal/{config,storage}`, Flutter iskeleti, doldurulmuş `AGENTS.md`. Ajan branch'leri henüz merge edilmedi.
+**Commit status:** `main` GitHub'a push'landı (Faz 0: `1bfe114`, `dff1c9e`; ardından README + DATABASE.md + plan.md + bu güncelleme).
+Ajan branch'leri (`worktree-agent-*`) yalnız yerelde, henüz commit atmadılar, merge edilmedi.
 
 ---
 
@@ -65,10 +65,22 @@ Faz 0 (temel + sözleşmeler) bitti ve commit'lendi; Faz 1'de 4 ajan kendi git w
 ### 2. Paralel ajanlar (Faz 1, ayrı worktree'ler)
 | Ajan | Sahiplik | Durum |
 |------|----------|-------|
-| A backend-core | httpx, auth, audit, observations, media, geographic, review, notifications, app, e2e | çalışıyor |
+| A backend-core | httpx, auth, audit, observations, media, geographic, review, notifications, app, e2e (+ client_ref) | çalışıyor |
 | B flutter-foundation | apps/flutter_app core, tema, API istemcisi, auth, shell, harita, profil | çalışıyor |
 | D1 intelligence | ai, rag, rss, jobs (yalnız servis katmanı) | çalışıyor |
 | E1 simulation | simulation + Open-Meteo iklim verisi (yalnız servis katmanı) | çalışıyor |
+
+### 3. Sonradan eklenen kapsam: çevrimdışı gözlem kuyruğu (kullanıcı fikri)
+Dağda/köyde sinyal yokken çekilen gözlemler telefonda saklanıp internet gelince gönderilecek. Karar: `client_ref` (cihazda üretilen ID,
+`(user_id, client_ref)` benzersiz) ile idempotent POST + medya sha256 ile idempotent yükleme; `observed_at` gerçek çekim zamanı.
+Backend tarafı A'ya iletildi (migration `0002_client_ref.sql` + OpenAPI güncellemesi izinli tek istisna). Flutter kuyruğu C ajanında
+(sihirbaz ile birlikte). Çevrimdışı harita karo paketi: stretch.
+
+### 4. Bilinen sorunlar / gözlemler
+- A ve B worktree'leri yanlışlıkla eski `7f6c707` commit'inden açıldı (D1/E1 doğru). A temel dosyaları kopyalayarak toparladı; merge'de yalnız ajanların kendi dizinleri alınacak.
+- A'nın `httpx/audit/password` kodu okundu: ciddi bulgu yok. Merge'de bakılacaklar: genel `BodyLimit` vs medya limiti, reverse-proxy arkasında tek-IP rate limit,
+  audit `before/after` içine PII girmemesi, `/admin/audit-logs?action=` OpenAPI'de yok.
+- Android SDK / Chrome yok; iOS/Windows/macOS bu makinede derlenemez.
 
 **Deliberately not done:** Flutter gözlem sihirbazı/uzman paneli/AI/Resmî/Simülasyon ekranları (B bitince C/F ajanları),
 D1/E1 HTTP handler'ları (A merge olunca faz 2).
@@ -76,6 +88,10 @@ D1/E1 HTTP handler'ları (A merge olunca faz 2).
 ---
 
 ## Verification
+
+Plan: `plan.md` (repo kökü) — tüm fazlar ve işaretli ilerleme orada.
+
+İlerleme tahmini (ölçüm değil): proje ~%20; A ~%30, B ~%35, E1 ~%35, D1 ~%10 (ajanlar henüz commit atmadı).
 
 Faz 0: `cd backend && go test -tags "sqlite_fts5 sqlite_rtree" -race ./...` → `ok .../internal/storage 1.019s`; `go vet` temiz;
 `sqlite3 < 0001_init.sql` hatasız (98 şema nesnesi); openapi.yaml YAML olarak geçerli (31 path, 25 schema).
