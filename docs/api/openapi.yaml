@@ -151,6 +151,10 @@ paths:
     post:
       tags: [observations]
       summary: Create an observation / issue report (status `submitted`)
+      description: |
+        Idempotent when `client_ref` is given: if the caller already has an observation with the same
+        `client_ref`, nothing is created and the EXISTING observation is returned with **200** (instead of 201).
+        This lets offline clients safely retry a queued create.
       requestBody:
         required: true
         content:
@@ -158,6 +162,7 @@ paths:
             schema: {$ref: '#/components/schemas/ObservationCreate'}
       responses:
         '201': {description: Created, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/Observation'}}}}}}
+        '200': {description: Already exists for this `client_ref` (existing observation returned, nothing created), content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/Observation'}}}}}}
         '400': {$ref: '#/components/responses/Error'}
   /observations/{id}:
     parameters:
@@ -190,6 +195,7 @@ paths:
     post:
       tags: [observations]
       summary: Upload one image (multipart field `file`; jpeg/png/webp, <= MAX_UPLOAD_MB)
+      description: Idempotent - if an image with the same sha256 (of the re-encoded bytes) already exists on the observation, 200 with the existing Media is returned and nothing is added.
       requestBody:
         required: true
         content:
@@ -201,6 +207,7 @@ paths:
                 file: {type: string, format: binary}
       responses:
         '201': {description: Created, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/Media'}}}}}}
+        '200': {description: Same image already attached (existing Media returned), content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/Media'}}}}}}
         '413': {$ref: '#/components/responses/Error'}
         '415': {$ref: '#/components/responses/Error'}
   /media/{id}:
@@ -606,6 +613,7 @@ components:
         accuracy_m: {type: number}
         observed_at: {type: string, format: date-time}
         draft: {type: boolean, description: true -> status draft instead of submitted}
+        client_ref: {type: string, minLength: 8, maxLength: 64, pattern: '^[A-Za-z0-9_-]+$', description: 'Device-generated unique id (e.g. UUID) making the create idempotent per user'}
     ObservationPatch:
       type: object
       properties:
@@ -622,6 +630,7 @@ components:
       properties:
         id: {type: string}
         reference_no: {type: string}
+        client_ref: {type: string, nullable: true, description: echo of the client-supplied idempotency key}
         user_id: {type: string}
         record_type: {type: string}
         category: {type: string}
