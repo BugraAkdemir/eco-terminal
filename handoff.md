@@ -40,6 +40,10 @@ should never have to reconstruct "what was I doing" from git log alone.
 
 ---
 
+> **GÜNCELLEME (kota duruşundan sonra):** B (Flutter temeli) artık **main'e MERGE EDİLDİ** (apps/ çakışmaları B'nin sürümüyle çözüldü). B'nin kendi raporu: `flutter analyze` temiz, `flutter test` 37 geçti, `flutter build linux` başarılı — ancak **bunları ben henüz yeniden çalıştırmadım** (ilk iş: `cd apps/flutter_app && flutter pub get && flutter analyze && flutter test && flutter build linux`). Görsel doğrulama YOK (xvfb ekran görüntüsü siyahtı).
+> B'nin açık işleri: fontlar (Fraunces/Atkinson Hyperlegible/IBM Plex Mono) bundle EDİLMEDİ (assets/fonts + pubspec + ğĞşŞıİöçü kontrolü); `flutter build web` sonucu okunmadı; gerçek backend ile çalıştırıp 3 genişlikte görsel kontrol. Eklenti noktaları: `apps/flutter_app/lib/app_extensions.dart` (`registerPanelTab`, `registerRoute`, `registerMapOverlay`), ayrıntı `docs/architecture/flutter.md`.
+> Sözleşme belirsizlikleri (B): PATCH /auth/me `consent_location` vs User `location_consent`; /regions/{id}/observations'ta `status` filtresi yok; liste sıralaması belirsiz; tek `category` filtresi. Hâlâ yapılacak: E2 (simülasyon handler), D2 (AI/RSS handler), C, F, Faz 3 — yukarıdaki sıra geçerli.
+
 # Handoff — 2026-10-20 (Session 2b) — KOTA DURDURMASI: nereden devam edilecek
 
 ## Durum (kota bitti, hesap değişecek)
