@@ -1,0 +1,23 @@
+# env / secrets
+.env
+*.pem
+# runtime data
+backend/data/
+data/
+*.db
+*.db-wal
+*.db-shm
+# Go
+backend/bin/
+*.test
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+.pub-cache/
+.pub/
+*.iml
+# misc
+.DS_Store
+.claude/
