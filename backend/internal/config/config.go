@@ -45,6 +45,9 @@ type RSS struct {
 type Climate struct {
 	BaseURL string
 	Timeout time.Duration
+	// SnapshotPath: offline ERA5 snapshot (datasets/environmental/*.json). Empty => searched at
+	// startup (see simulation/climate.ResolveSnapshotPath). Set ECO_CLIMATE_SNAPSHOT to override.
+	SnapshotPath string
 }
 
 func (c Config) IsProduction() bool { return c.Env == "production" }
@@ -78,8 +81,9 @@ func Load() Config {
 			UserAgent:       get("ECO_RSS_USER_AGENT", "EcoTerminal/1.0"),
 		},
 		Climate: Climate{
-			BaseURL: get("ECO_CLIMATE_BASE_URL", "https://archive-api.open-meteo.com/v1/archive"),
-			Timeout: time.Duration(getInt("ECO_CLIMATE_TIMEOUT_SECONDS", 60)) * time.Second,
+			BaseURL:      get("ECO_CLIMATE_BASE_URL", "https://archive-api.open-meteo.com/v1/archive"),
+			Timeout:      time.Duration(getInt("ECO_CLIMATE_TIMEOUT_SECONDS", 60)) * time.Second,
+			SnapshotPath: strings.TrimSpace(os.Getenv("ECO_CLIMATE_SNAPSHOT")),
 		},
 		SeedDemo: getBool("ECO_SEED_DEMO", false),
 	}

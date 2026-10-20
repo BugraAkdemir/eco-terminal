@@ -9,8 +9,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/BugraAkdemir/eco-terminal/backend/internal/audit"
 	"github.com/BugraAkdemir/eco-terminal/backend/internal/storage"
 )
+
+type actorKey struct{}
+
+// WithActor attaches the audit actor (role, IP) used for the audit_logs entry of a run.
+func WithActor(ctx context.Context, a audit.Actor) context.Context {
+	return context.WithValue(ctx, actorKey{}, a)
+}
 
 // Service runs, persists and reads simulations.
 type Service struct {
@@ -29,6 +37,20 @@ func NewService(db *sql.DB, climateData ClimateData, explainer Explainer) *Servi
 	reg := NewRegistry()
 	reg.Register(ClimateDroughtV1{})
 	return &Service{DB: db, Climate: climateData, Explainer: explainer, Registry: reg, ExplainTimeout: 45 * time.Second}
+}
+
+// Normalize validates a request and returns the parameters that Run would persist (ErrInvalid /
+// ErrUnknown on bad input). Handlers use it to prepare data before Run.
+func (s *Service) Normalize(req RunRequest) (Params, error) {
+	name := req.Model
+	if name == "" {
+		name = ModelClimateDroughtV1
+	}
+	m, err := s.Registry.Get(name)
+	if err != nil {
+		return Params{}, err
+	}
+	return m.Normalize(req)
 }
 
 // Run executes the requested scenario for userID, persists scenario + result and returns the
@@ -114,6 +136,15 @@ func (s *Service) persist(ctx context.Context, userID string, res *Result) error
 	}
 	if _, err := tx.ExecContext(ctx, `INSERT INTO simulation_results (id, scenario_id, status, result_json, narrative, created_at, updated_at)
 		VALUES (?,?,?,?,?,?,?)`, res.ID, res.ScenarioID, res.Status, string(resultJSON), narrative, now, now); err != nil {
+		return err
+	}
+	actor, ok := ctx.Value(actorKey{}).(audit.Actor)
+	if !ok {
+		actor = audit.Actor{ID: userID}
+	}
+	if err := audit.Log(ctx, tx, audit.Entry{Actor: actor, Action: "simulation.run", EntityType: "simulation_result", EntityID: res.ID,
+		After: map[string]any{"scenario_id": res.ScenarioID, "model": res.Model, "region_id": res.RegionID, "status": res.Status,
+			"precip_change_pct": res.Params.PrecipChangePct, "temp_change_c": res.Params.TempChangeC}}); err != nil {
 		return err
 	}
 	return tx.Commit()

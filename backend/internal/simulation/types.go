@@ -77,6 +77,8 @@ type DataSource struct {
 	Source   string  `json:"source"`
 	License  string  `json:"license"`
 	Coverage float64 `json:"coverage"` // fraction (0..1) of reference months with usable data
+	// Attribution must be displayed next to charts/indicators built from this dataset (CC BY 4.0).
+	Attribution string `json:"attribution"`
 }
 
 // Result is openapi SimulationResult (plus model, region_id and coverage as additive fields).

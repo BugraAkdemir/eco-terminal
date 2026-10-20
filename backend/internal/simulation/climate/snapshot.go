@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/BugraAkdemir/eco-terminal/backend/internal/simulation/model"
@@ -180,4 +181,43 @@ func (s *Series) Slice(from, to time.Time) *Series {
 	out := *s
 	out.Dates, out.Precip, out.Temp = s.Dates[i:j], s.Precip[i:j], s.Temp[i:j]
 	return &out
+}
+
+// DefaultSnapshotFile is the committed Kastamonu snapshot (datasets/environmental).
+const DefaultSnapshotFile = "kastamonu_era5_daily_1991_2025.json"
+
+// ResolveSnapshotPath returns the snapshot file to use, or "" when none is found. An explicit path
+// (ECO_CLIMATE_SNAPSHOT) wins if it exists; otherwise datasets/environmental/<DefaultSnapshotFile> is
+// searched relative to the working directory (server started from backend/, from the repository root
+// or from a sibling directory) and relative to the executable (bin/server inside backend/).
+func ResolveSnapshotPath(explicit string) string {
+	exists := func(p string) bool {
+		st, err := os.Stat(p)
+		return err == nil && !st.IsDir()
+	}
+	if explicit != "" {
+		if exists(explicit) {
+			return explicit
+		}
+		return ""
+	}
+	rel := filepath.Join("datasets", "environmental", DefaultSnapshotFile)
+	var bases []string
+	if wd, err := os.Getwd(); err == nil {
+		for _, up := range []string{".", "..", "../.."} {
+			bases = append(bases, filepath.Join(wd, up))
+		}
+	}
+	if exe, err := os.Executable(); err == nil {
+		dir := filepath.Dir(exe)
+		for _, up := range []string{".", "..", "../..", "../../.."} {
+			bases = append(bases, filepath.Join(dir, up))
+		}
+	}
+	for _, b := range bases {
+		if p := filepath.Join(b, rel); exists(p) {
+			return p
+		}
+	}
+	return ""
 }

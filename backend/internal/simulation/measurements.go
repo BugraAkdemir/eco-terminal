@@ -19,16 +19,17 @@ type MeasurementPoint struct {
 
 // MeasurementSeries is the payload of GET /environment/measurements (openapi) plus provenance.
 type MeasurementSeries struct {
-	Dataset    string             `json:"dataset"`
-	Unit       string             `json:"unit"`
-	Type       string             `json:"type"`
-	Resolution string             `json:"resolution"`
-	From       string             `json:"from"`
-	To         string             `json:"to"`
-	Coverage   float64            `json:"coverage"` // fraction of expected points present (0..1)
-	Source     string             `json:"source"`
-	License    string             `json:"license"`
-	Points     []MeasurementPoint `json:"points"`
+	Dataset     string             `json:"dataset"`
+	Unit        string             `json:"unit"`
+	Type        string             `json:"type"`
+	Resolution  string             `json:"resolution"`
+	From        string             `json:"from"`
+	To          string             `json:"to"`
+	Coverage    float64            `json:"coverage"` // fraction of expected points present (0..1)
+	Source      string             `json:"source"`
+	License     string             `json:"license"`
+	Attribution string             `json:"attribution"`
+	Points      []MeasurementPoint `json:"points"`
 }
 
 // MeasurementsSeries reads the STORED series of a region (it never calls the provider; use
@@ -67,7 +68,7 @@ func (s *Service) MeasurementsSeries(ctx context.Context, regionID, typ, from, t
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return out, err
 	}
-	out.Dataset, out.Source, out.License = ds.Name, ds.Source, ds.License
+	out.Dataset, out.Source, out.License, out.Attribution = ds.Name, ds.Source, ds.License, climate.Attribution
 	if out.Dataset == "" {
 		out.Dataset = climate.DatasetName
 	}

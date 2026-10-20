@@ -141,7 +141,12 @@ func (ClimateDroughtV1) Run(ctx context.Context, env Env, p Params) (Outcome, er
 	}
 	// Make sure the data is there; a provider failure is not fatal — whatever is stored is used,
 	// and if that is not enough the result says so (and why) instead of inventing numbers.
-	_, fetchErr := env.Climate.EnsureRegionData(ctx, p.RegionID, first, last)
+	var fetchErr error
+	if prepared, err := preparedFrom(ctx); prepared {
+		fetchErr = err // the caller already ran EnsureRegionData (bounded wait); do not repeat a slow failing download
+	} else {
+		_, fetchErr = env.Climate.EnsureRegionData(ctx, p.RegionID, first, last)
+	}
 	if ctx.Err() != nil {
 		return Outcome{}, ctx.Err()
 	}
@@ -162,7 +167,8 @@ func (ClimateDroughtV1) Run(ctx context.Context, env Env, p Params) (Outcome, er
 		Assumptions: out.Assumptions, Limitations: out.Limitations,
 	}
 	if ds, err := env.Climate.Dataset(ctx); err == nil {
-		o.DataSources = []DataSource{{Dataset: ds.Name, Source: ds.Source, License: ds.License, Coverage: round3(out.Coverage.Both)}}
+		o.DataSources = []DataSource{{Dataset: ds.Name, Source: ds.Source, License: ds.License,
+			Coverage: round3(out.Coverage.Both), Attribution: climate.Attribution}}
 	}
 	if out.Status == model.StatusInsufficientData && fetchErr != nil {
 		o.InsufficientReason += " " + fetchFailureTR(fetchErr)
@@ -183,4 +189,18 @@ func round3(v float64) float64 {
 		return v
 	}
 	return math.Round(v*1000) / 1000
+}
+
+type preparedKey struct{}
+type preparedVal struct{ err error }
+
+// WithPreparedData marks ctx as "climate data for this run was already ensured by the caller;
+// err is the outcome of that attempt (nil = fine)". Run then skips its own EnsureRegionData.
+func WithPreparedData(ctx context.Context, err error) context.Context {
+	return context.WithValue(ctx, preparedKey{}, preparedVal{err})
+}
+
+func preparedFrom(ctx context.Context) (bool, error) {
+	v, ok := ctx.Value(preparedKey{}).(preparedVal)
+	return ok, v.err
 }
