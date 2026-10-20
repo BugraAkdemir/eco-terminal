@@ -1,0 +1,884 @@
+openapi: 3.0.3
+info:
+  title: Eco Terminal API
+  version: 1.0.0
+  description: |
+    Contract between the Go backend (`backend/`) and the Flutter client (`apps/flutter_app/`).
+    **This file is the source of truth** — change it first, then both sides.
+
+    Conventions
+    - Base path `/api/v1`. JSON UTF-8. Timestamps RFC3339 UTC. Ids are UUID strings.
+    - Success: `{"data": <payload>, "meta": {...optional pagination...}}`.
+    - Error: `{"error": {"code": "<machine_code>", "message": "<human text>", "details": {...optional}}}`.
+      Codes: `validation_failed` 400, `unauthorized` 401, `forbidden` 403, `not_found` 404, `conflict` 409,
+      `payload_too_large` 413, `unsupported_media_type` 415, `rate_limited` 429, `ai_not_configured` 503, `internal` 500.
+    - Auth: `Authorization: Bearer <token>` (opaque token from login). Roles: citizen < researcher < reviewer < admin
+      (reviewer/researcher are siblings with distinct powers; admin has all).
+    - Pagination: `?page=1&page_size=50` (max 200); response `meta: {page, page_size, total}`.
+    - Privacy: coordinates in responses are *public* coordinates (generalized when `is_sensitive`).
+      Exact `lat/lon` only for the owner, reviewer, admin (field `exact_location`).
+servers:
+  - url: http://localhost:8080/api/v1
+security:
+  - bearerAuth: []
+tags:
+  - {name: system}
+  - {name: auth}
+  - {name: observations}
+  - {name: regions}
+  - {name: ai}
+  - {name: feeds}
+  - {name: simulation}
+  - {name: review}
+  - {name: notifications}
+  - {name: admin}
+paths:
+  /health:
+    get:
+      tags: [system]
+      security: []
+      summary: Liveness + capability flags
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      status: {type: string, example: ok}
+                      version: {type: string}
+                      ai_configured: {type: boolean}
+                      embeddings_configured: {type: boolean}
+                      vector_search: {type: boolean}
+  /auth/register:
+    post:
+      tags: [auth]
+      security: []
+      summary: Create a citizen account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RegisterRequest'}
+      responses:
+        '201': {description: Created, content: {application/json: {schema: {$ref: '#/components/schemas/AuthResponse'}}}}
+        '400': {$ref: '#/components/responses/Error'}
+        '409': {$ref: '#/components/responses/Error'}
+  /auth/login:
+    post:
+      tags: [auth]
+      security: []
+      summary: Log in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: {type: string, format: email}
+                password: {type: string}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/AuthResponse'}}}}
+        '401': {$ref: '#/components/responses/Error'}
+        '429': {$ref: '#/components/responses/Error'}
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Revoke the current token
+      responses:
+        '204': {description: No content}
+  /auth/me:
+    get:
+      tags: [auth]
+      summary: Current user
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/User'}}}}}}
+    patch:
+      tags: [auth]
+      summary: Update own profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                display_name: {type: string}
+                locale: {type: string}
+                consent_location: {type: boolean}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/User'}}}}}}
+    delete:
+      tags: [auth]
+      summary: Delete own account (anonymizes profile, removes personal data, keeps de-identified observations)
+      responses:
+        '204': {description: No content}
+  /observations:
+    get:
+      tags: [observations]
+      summary: List/filter observations visible to the caller
+      description: |
+        Anonymous/citizen callers see only `verified` records (plus their own records of any status).
+        Reviewers/admins see everything. `mine=true` restricts to own records.
+      security: [{}, {bearerAuth: []}]
+      parameters:
+        - {name: bbox, in: query, description: 'min_lon,min_lat,max_lon,max_lat', schema: {type: string}}
+        - {name: region_id, in: query, schema: {type: string}}
+        - {name: category, in: query, schema: {type: string}}
+        - {name: record_type, in: query, schema: {type: string, enum: [observation, issue]}}
+        - {name: status, in: query, schema: {type: string}}
+        - {name: from, in: query, description: 'observed_at >= (RFC3339 or YYYY-MM-DD)', schema: {type: string}}
+        - {name: to, in: query, schema: {type: string}}
+        - {name: mine, in: query, schema: {type: boolean}}
+        - {name: q, in: query, description: text search over title/description/species, schema: {type: string}}
+        - {name: page, in: query, schema: {type: integer}}
+        - {name: page_size, in: query, schema: {type: integer}}
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: {type: array, items: {$ref: '#/components/schemas/Observation'}}
+                  meta: {$ref: '#/components/schemas/PageMeta'}
+    post:
+      tags: [observations]
+      summary: Create an observation / issue report (status `submitted`)
+      description: |
+        Idempotent when `client_ref` is given: if the caller already has an observation with the same
+        `client_ref`, nothing is created and the EXISTING observation is returned with **200** (instead of 201).
+        This lets offline clients safely retry a queued create.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ObservationCreate'}
+      responses:
+        '201': {description: Created, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/Observation'}}}}}}
+        '200': {description: Already exists for this `client_ref` (existing observation returned, nothing created), content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/Observation'}}}}}}
+        '400': {$ref: '#/components/responses/Error'}
+  /observations/{id}:
+    parameters:
+      - {name: id, in: path, required: true, schema: {type: string}}
+    get:
+      tags: [observations]
+      security: [{}, {bearerAuth: []}]
+      summary: Observation detail (media, AI analysis, status history as permitted)
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/ObservationDetail'}}}}}}
+        '404': {$ref: '#/components/responses/Error'}
+    patch:
+      tags: [observations]
+      summary: Owner edits own record (allowed in draft/submitted/needs_information) or answers an info request
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ObservationPatch'}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/Observation'}}}}}}
+        '403': {$ref: '#/components/responses/Error'}
+    delete:
+      tags: [observations]
+      summary: Owner deletes own record (soft delete)
+      responses:
+        '204': {description: No content}
+  /observations/{id}/media:
+    parameters:
+      - {name: id, in: path, required: true, schema: {type: string}}
+    post:
+      tags: [observations]
+      summary: Upload one image (multipart field `file`; jpeg/png/webp, <= MAX_UPLOAD_MB)
+      description: Idempotent - if an image with the same sha256 (of the re-encoded bytes) already exists on the observation, 200 with the existing Media is returned and nothing is added.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: {type: string, format: binary}
+      responses:
+        '201': {description: Created, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/Media'}}}}}}
+        '200': {description: Same image already attached (existing Media returned), content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/Media'}}}}}}
+        '413': {$ref: '#/components/responses/Error'}
+        '415': {$ref: '#/components/responses/Error'}
+  /media/{id}:
+    get:
+      tags: [observations]
+      security: [{}, {bearerAuth: []}]
+      summary: Stream image bytes (same visibility rules as the parent observation). `?thumb=1` for a 400px thumbnail.
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string}}
+        - {name: thumb, in: query, schema: {type: boolean}}
+      responses:
+        '200': {description: Image bytes, content: {image/*: {schema: {type: string, format: binary}}}}
+        '404': {$ref: '#/components/responses/Error'}
+  /regions:
+    get:
+      tags: [regions]
+      security: [{}, {bearerAuth: []}]
+      summary: List regions (without geometry unless `geometry=true`)
+      parameters:
+        - {name: kind, in: query, schema: {type: string, enum: [province, district, village, grid, custom]}}
+        - {name: parent_id, in: query, schema: {type: string}}
+        - {name: geometry, in: query, schema: {type: boolean}}
+        - {name: q, in: query, schema: {type: string}}
+        - {name: lon, in: query, description: 'point-in-polygon lookup (with lat)', schema: {type: number}}
+        - {name: lat, in: query, schema: {type: number}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {type: array, items: {$ref: '#/components/schemas/Region'}}}}}}}
+    post:
+      tags: [regions]
+      summary: Create a custom analysis region from a GeoJSON polygon (researcher/admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, geometry]
+              properties:
+                name: {type: string}
+                geometry: {type: object, description: GeoJSON Polygon/MultiPolygon geometry}
+      responses:
+        '201': {description: Created, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/Region'}}}}}}
+  /regions/{id}:
+    get:
+      tags: [regions]
+      security: [{}, {bearerAuth: []}]
+      summary: Region with GeoJSON geometry
+      parameters: [{name: id, in: path, required: true, schema: {type: string}}]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/Region'}}}}}}
+  /regions/{id}/observations:
+    get:
+      tags: [regions]
+      security: [{}, {bearerAuth: []}]
+      summary: Observations whose point lies inside the region (same filters/visibility as /observations)
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string}}
+        - {name: category, in: query, schema: {type: string}}
+        - {name: from, in: query, schema: {type: string}}
+        - {name: to, in: query, schema: {type: string}}
+        - {name: page, in: query, schema: {type: integer}}
+        - {name: page_size, in: query, schema: {type: integer}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {type: array, items: {$ref: '#/components/schemas/Observation'}}, meta: {$ref: '#/components/schemas/PageMeta'}}}}}}
+  /regions/{id}/analytics:
+    get:
+      tags: [regions]
+      security: [{}, {bearerAuth: []}]
+      summary: Aggregates for a region (all numbers computed by SQL)
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string}}
+        - {name: from, in: query, schema: {type: string}}
+        - {name: to, in: query, schema: {type: string}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/RegionAnalytics'}}}}}}
+  /ai/providers/status:
+    get:
+      tags: [ai]
+      summary: Which AI capabilities are configured (never returns secrets)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      text_generation: {$ref: '#/components/schemas/ProviderStatus'}
+                      vision: {$ref: '#/components/schemas/ProviderStatus'}
+                      embedding: {$ref: '#/components/schemas/ProviderStatus'}
+                      species_classification: {$ref: '#/components/schemas/ProviderStatus'}
+  /ai/chat:
+    post:
+      tags: [ai]
+      summary: Geo-aware hybrid RAG question answering
+      description: |
+        Works without any AI key: then `mode` is `retrieval_only` and the answer is a structured
+        summary of SQL facts + retrieved sources (no generated prose). With a text provider, `mode` is `generative`.
+        "Burada/bu bölgede" resolves to `region_id` when given; if absent and the question needs a place,
+        `needs_region=true` is returned.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message: {type: string, maxLength: 2000}
+                region_id: {type: string}
+                from: {type: string}
+                to: {type: string}
+                history:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      role: {type: string, enum: [user, assistant]}
+                      content: {type: string}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/ChatAnswer'}}}}}}
+  /ai/analyze-observation:
+    post:
+      tags: [ai]
+      summary: Queue/run AI analysis of an observation's photos (owner, reviewer, admin). Result is a *suggestion* only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [observation_id]
+              properties:
+                observation_id: {type: string}
+      responses:
+        '202': {description: Accepted, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/AIAnalysis'}}}}}}
+        '503': {$ref: '#/components/responses/Error'}
+  /feeds:
+    get:
+      tags: [feeds]
+      security: [{}, {bearerAuth: []}]
+      summary: Configured official sources and their health
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {type: array, items: {$ref: '#/components/schemas/FeedSource'}}}}}}}
+  /feeds/articles:
+    get:
+      tags: [feeds]
+      security: [{}, {bearerAuth: []}]
+      summary: Official announcements
+      parameters:
+        - {name: region_id, in: query, schema: {type: string}}
+        - {name: source_id, in: query, schema: {type: string}}
+        - {name: category, in: query, schema: {type: string}}
+        - {name: from, in: query, schema: {type: string}}
+        - {name: to, in: query, schema: {type: string}}
+        - {name: page, in: query, schema: {type: integer}}
+        - {name: page_size, in: query, schema: {type: integer}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {type: array, items: {$ref: '#/components/schemas/FeedArticle'}}, meta: {$ref: '#/components/schemas/PageMeta'}}}}}}
+  /admin/feeds:
+    get:
+      tags: [admin]
+      summary: List sources incl. disabled (admin)
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {type: array, items: {$ref: '#/components/schemas/FeedSource'}}}}}}}
+    post:
+      tags: [admin]
+      summary: Add a source (admin). The URL is fetched once to verify it is a valid RSS/Atom feed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, feed_url]
+              properties:
+                name: {type: string}
+                organization: {type: string}
+                feed_url: {type: string}
+                category: {type: string}
+                interval_minutes: {type: integer}
+      responses:
+        '201': {description: Created, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/FeedSource'}}}}}}
+  /admin/feeds/sync:
+    post:
+      tags: [admin]
+      summary: Trigger an immediate sync (optionally one source). Runs async; returns job info.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                source_id: {type: string}
+      responses:
+        '202': {description: Accepted, content: {application/json: {schema: {type: object, properties: {data: {type: object, properties: {job_id: {type: string}}}}}}}}
+  /admin/users:
+    get:
+      tags: [admin]
+      summary: List users (admin)
+      parameters:
+        - {name: page, in: query, schema: {type: integer}}
+        - {name: page_size, in: query, schema: {type: integer}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {type: array, items: {$ref: '#/components/schemas/User'}}, meta: {$ref: '#/components/schemas/PageMeta'}}}}}}
+  /admin/users/{id}:
+    patch:
+      tags: [admin]
+      summary: Change role / suspend (admin)
+      parameters: [{name: id, in: path, required: true, schema: {type: string}}]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role: {type: string, enum: [citizen, researcher, reviewer, admin]}
+                status: {type: string, enum: [active, suspended]}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/User'}}}}}}
+  /admin/audit-logs:
+    get:
+      tags: [admin]
+      summary: Audit log (admin)
+      parameters:
+        - {name: entity_type, in: query, schema: {type: string}}
+        - {name: entity_id, in: query, schema: {type: string}}
+        - {name: actor_id, in: query, schema: {type: string}}
+        - {name: page, in: query, schema: {type: integer}}
+        - {name: page_size, in: query, schema: {type: integer}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {type: array, items: {$ref: '#/components/schemas/AuditLog'}}, meta: {$ref: '#/components/schemas/PageMeta'}}}}}}
+  /simulations/run:
+    post:
+      tags: [simulation]
+      summary: Run (and persist) a climate/drought scenario (researcher/admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/SimulationRunRequest'}
+      responses:
+        '200': {description: OK (status may be insufficient_data), content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/SimulationResult'}}}}}}
+  /simulations:
+    get:
+      tags: [simulation]
+      summary: Own saved scenarios with latest result summary
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {type: array, items: {$ref: '#/components/schemas/SimulationResult'}}}}}}}
+  /simulations/{id}:
+    get:
+      tags: [simulation]
+      summary: Result by id
+      parameters: [{name: id, in: path, required: true, schema: {type: string}}]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/SimulationResult'}}}}}}
+  /environment/measurements:
+    get:
+      tags: [simulation]
+      summary: Historical environmental series for a region (monthly or daily)
+      parameters:
+        - {name: region_id, in: query, required: true, schema: {type: string}}
+        - {name: type, in: query, required: true, schema: {type: string, enum: [precipitation, temperature_mean]}}
+        - {name: from, in: query, schema: {type: string}}
+        - {name: to, in: query, schema: {type: string}}
+        - {name: resolution, in: query, schema: {type: string, enum: [daily, monthly]}}
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      dataset: {type: string}
+                      unit: {type: string}
+                      coverage: {type: number, description: fraction of expected points present}
+                      points:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            ts: {type: string}
+                            value: {type: number}
+  /reviews/queue:
+    get:
+      tags: [review]
+      summary: Review queue (reviewer/admin)
+      parameters:
+        - {name: status, in: query, schema: {type: string}}
+        - {name: category, in: query, schema: {type: string}}
+        - {name: record_type, in: query, schema: {type: string}}
+        - {name: priority, in: query, schema: {type: string}}
+        - {name: region_id, in: query, schema: {type: string}}
+        - {name: ai_status, in: query, schema: {type: string, enum: [pending, done, failed, skipped]}}
+        - {name: from, in: query, schema: {type: string}}
+        - {name: to, in: query, schema: {type: string}}
+        - {name: page, in: query, schema: {type: integer}}
+        - {name: page_size, in: query, schema: {type: integer}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {type: array, items: {$ref: '#/components/schemas/ObservationDetail'}}, meta: {$ref: '#/components/schemas/PageMeta'}}}}}}
+  /reviews/{observationId}/decision:
+    post:
+      tags: [review]
+      summary: Reviewer decision; changes status, writes history + audit log, notifies owner
+      parameters: [{name: observationId, in: path, required: true, schema: {type: string}}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ReviewDecision'}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/ObservationDetail'}}}}}}
+        '409': {$ref: '#/components/responses/Error'}
+  /notifications:
+    get:
+      tags: [notifications]
+      summary: Own notifications
+      parameters:
+        - {name: unread, in: query, schema: {type: boolean}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {type: array, items: {$ref: '#/components/schemas/Notification'}}}}}}}
+  /notifications/{id}/read:
+    post:
+      tags: [notifications]
+      summary: Mark as read
+      parameters: [{name: id, in: path, required: true, schema: {type: string}}]
+      responses:
+        '204': {description: No content}
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer}
+  responses:
+    Error:
+      description: Error
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ErrorBody'}
+  schemas:
+    ErrorBody:
+      type: object
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: {type: string}
+            message: {type: string}
+            details: {type: object}
+    PageMeta:
+      type: object
+      properties:
+        page: {type: integer}
+        page_size: {type: integer}
+        total: {type: integer}
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: {type: string, format: email}
+        password: {type: string, minLength: 10}
+        display_name: {type: string}
+    AuthResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            token: {type: string}
+            expires_at: {type: string, format: date-time}
+            user: {$ref: '#/components/schemas/User'}
+    User:
+      type: object
+      properties:
+        id: {type: string}
+        email: {type: string}
+        role: {type: string, enum: [citizen, researcher, reviewer, admin]}
+        status: {type: string}
+        display_name: {type: string}
+        locale: {type: string}
+        location_consent: {type: boolean}
+        created_at: {type: string, format: date-time}
+    ObservationCreate:
+      type: object
+      required: [record_type, category, lat, lon, observed_at]
+      properties:
+        record_type: {type: string, enum: [observation, issue]}
+        category: {type: string, enum: [animal, plant, water, forest, pollution, injured_wildlife, other]}
+        title: {type: string}
+        description: {type: string}
+        species_guess: {type: string, description: User's guess; stored as unverified}
+        count_observed: {type: integer}
+        details: {type: object, description: 'Category-specific fields, e.g. {"alive":true,"behavior":"grazing"} / {"pollution_signs":true,"odor":true} / {"tree_felling":true,"fire_trace":false}'}
+        lat: {type: number}
+        lon: {type: number}
+        location_source: {type: string, enum: [gps, manual]}
+        accuracy_m: {type: number}
+        observed_at: {type: string, format: date-time}
+        draft: {type: boolean, description: true -> status draft instead of submitted}
+        client_ref: {type: string, minLength: 8, maxLength: 64, pattern: '^[A-Za-z0-9_-]+$', description: 'Device-generated unique id (e.g. UUID) making the create idempotent per user'}
+    ObservationPatch:
+      type: object
+      properties:
+        title: {type: string}
+        description: {type: string}
+        species_guess: {type: string}
+        count_observed: {type: integer}
+        details: {type: object}
+        lat: {type: number}
+        lon: {type: number}
+        submit: {type: boolean, description: 'draft -> submitted, or needs_information -> under_review'}
+    Observation:
+      type: object
+      properties:
+        id: {type: string}
+        reference_no: {type: string}
+        client_ref: {type: string, nullable: true, description: echo of the client-supplied idempotency key}
+        user_id: {type: string}
+        record_type: {type: string}
+        category: {type: string}
+        title: {type: string}
+        description: {type: string}
+        species_guess: {type: string}
+        species_verified: {type: string}
+        count_observed: {type: integer, nullable: true}
+        details: {type: object}
+        lat: {type: number, description: public coordinate}
+        lon: {type: number, description: public coordinate}
+        exact_location:
+          type: object
+          nullable: true
+          description: present only for owner/reviewer/admin
+          properties: {lat: {type: number}, lon: {type: number}}
+        location_generalized: {type: boolean}
+        location_source: {type: string}
+        accuracy_m: {type: number, nullable: true}
+        observed_at: {type: string, format: date-time}
+        status: {type: string, enum: [draft, submitted, ai_processed, under_review, verified, needs_information, rejected, resolved]}
+        priority: {type: string}
+        is_sensitive: {type: boolean}
+        is_demo: {type: boolean}
+        primary_region_id: {type: string, nullable: true}
+        primary_region_name: {type: string, nullable: true}
+        thumbnail_media_id: {type: string, nullable: true}
+        media_count: {type: integer}
+        created_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+    ObservationDetail:
+      allOf:
+        - $ref: '#/components/schemas/Observation'
+        - type: object
+          properties:
+            media: {type: array, items: {$ref: '#/components/schemas/Media'}}
+            ai_analysis: {type: array, items: {$ref: '#/components/schemas/AIAnalysis'}}
+            history: {type: array, items: {$ref: '#/components/schemas/StatusHistoryEntry'}}
+            reviews: {type: array, items: {$ref: '#/components/schemas/Review'}, description: reviewer/admin only}
+            owner_display_name: {type: string}
+    Media:
+      type: object
+      properties:
+        id: {type: string}
+        url: {type: string, description: 'relative URL /api/v1/media/{id}'}
+        thumb_url: {type: string}
+        mime_type: {type: string}
+        width: {type: integer}
+        height: {type: integer}
+        size_bytes: {type: integer}
+    AIAnalysis:
+      type: object
+      properties:
+        id: {type: string}
+        status: {type: string, enum: [pending, running, done, failed, skipped]}
+        provider: {type: string}
+        model: {type: string}
+        suggested_category: {type: string, nullable: true}
+        suggested_species: {type: string, nullable: true}
+        suggested_description: {type: string, nullable: true}
+        confidence: {type: number, nullable: true}
+        disclaimer: {type: string, description: always states this is an unverified AI suggestion}
+        error: {type: string, nullable: true}
+        created_at: {type: string, format: date-time}
+    StatusHistoryEntry:
+      type: object
+      properties:
+        id: {type: string}
+        actor_id: {type: string, nullable: true}
+        actor_type: {type: string}
+        actor_name: {type: string}
+        from_status: {type: string, nullable: true}
+        to_status: {type: string}
+        note: {type: string}
+        created_at: {type: string, format: date-time}
+    Review:
+      type: object
+      properties:
+        id: {type: string}
+        reviewer_id: {type: string}
+        decision: {type: string}
+        corrected_category: {type: string, nullable: true}
+        corrected_species: {type: string, nullable: true}
+        note: {type: string}
+        created_at: {type: string, format: date-time}
+    ReviewDecision:
+      type: object
+      required: [decision]
+      properties:
+        decision: {type: string, enum: [start_review, verify, reject, request_info, resolve]}
+        note: {type: string, description: required for reject and request_info}
+        corrected_category: {type: string}
+        corrected_species: {type: string}
+        mark_sensitive: {type: boolean}
+        priority: {type: string, enum: [low, normal, high, urgent]}
+    Region:
+      type: object
+      properties:
+        id: {type: string}
+        kind: {type: string}
+        name: {type: string}
+        parent_id: {type: string, nullable: true}
+        bbox: {type: array, items: {type: number}, description: '[min_lon,min_lat,max_lon,max_lat]'}
+        centroid: {type: object, properties: {lon: {type: number}, lat: {type: number}}}
+        geometry: {type: object, nullable: true, description: GeoJSON geometry}
+        source: {type: string}
+        is_demo: {type: boolean}
+    RegionAnalytics:
+      type: object
+      properties:
+        region_id: {type: string}
+        period: {type: object, properties: {from: {type: string}, to: {type: string}}}
+        totals: {type: object, properties: {observations: {type: integer}, issues: {type: integer}, verified: {type: integer}, pending_review: {type: integer}}}
+        by_category: {type: array, items: {type: object, properties: {category: {type: string}, count: {type: integer}}}}
+        by_month: {type: array, items: {type: object, properties: {month: {type: string}, count: {type: integer}, distinct_observers: {type: integer}}}}
+        top_species: {type: array, items: {type: object, properties: {species: {type: string}, count: {type: integer}}}}
+        environmental: {type: object, nullable: true, description: 'precip/temperature summaries when data present'}
+        data_quality:
+          type: object
+          properties:
+            distinct_observers: {type: integer}
+            months_with_data: {type: integer}
+            months_in_period: {type: integer}
+            warnings: {type: array, items: {type: string}, description: 'e.g. sampling-bias / sparse-data notes in Turkish'}
+    ProviderStatus:
+      type: object
+      properties:
+        configured: {type: boolean}
+        provider: {type: string}
+        model: {type: string}
+    SourceRef:
+      type: object
+      description: One citation backing an answer
+      properties:
+        id: {type: string, description: '[n] label used inside the answer text'}
+        type: {type: string, enum: [observation, rss_article, scientific, region_report, sql_fact]}
+        title: {type: string}
+        url: {type: string, nullable: true}
+        entity_id: {type: string, nullable: true, description: open this observation / article in the UI}
+        date: {type: string, nullable: true}
+        snippet: {type: string}
+        status: {type: string, nullable: true, description: verification status for observations}
+    ChatAnswer:
+      type: object
+      properties:
+        answer: {type: string}
+        mode: {type: string, enum: [generative, retrieval_only]}
+        region: {type: object, nullable: true, properties: {id: {type: string}, name: {type: string}}}
+        period: {type: object, properties: {from: {type: string}, to: {type: string}}}
+        facts:
+          type: array
+          description: Numbers computed by SQL (never by the LLM)
+          items: {type: object, properties: {label: {type: string}, value: {type: string}, query_note: {type: string}}}
+        sources: {type: array, items: {$ref: '#/components/schemas/SourceRef'}}
+        limitations: {type: array, items: {type: string}}
+        needs_region: {type: boolean}
+    FeedSource:
+      type: object
+      properties:
+        id: {type: string}
+        name: {type: string}
+        organization: {type: string}
+        feed_url: {type: string}
+        category: {type: string}
+        enabled: {type: boolean}
+        verified_at: {type: string, nullable: true}
+        last_fetched_at: {type: string, nullable: true}
+        last_status: {type: string}
+        last_error: {type: string}
+    FeedArticle:
+      type: object
+      properties:
+        id: {type: string}
+        source_id: {type: string}
+        source_name: {type: string}
+        title: {type: string}
+        summary: {type: string}
+        url: {type: string}
+        category: {type: string}
+        published_at: {type: string, nullable: true}
+        ingested_at: {type: string}
+        regions: {type: array, items: {type: object, properties: {id: {type: string}, name: {type: string}}}}
+        location_note: {type: string}
+    SimulationRunRequest:
+      type: object
+      required: [region_id, reference_from, reference_to]
+      properties:
+        name: {type: string}
+        model: {type: string, enum: [climate_drought_v1], default: climate_drought_v1}
+        region_id: {type: string}
+        reference_from: {type: string, description: 'YYYY-MM (inclusive), >= 10 years recommended'}
+        reference_to: {type: string}
+        precip_change_pct: {type: number, description: 'e.g. -20 means 20% less precipitation'}
+        temp_change_c: {type: number, description: 'e.g. 2 means +2 degC'}
+        explain: {type: boolean, description: if true and a text provider exists, add a narrative}
+    SimulationResult:
+      type: object
+      properties:
+        id: {type: string}
+        scenario_id: {type: string}
+        name: {type: string}
+        status: {type: string, enum: [ok, insufficient_data, error]}
+        params: {type: object}
+        indicators:
+          type: array
+          description: Reference vs scenario values per indicator (SPI-style precip anomaly, PET, water balance, SPEI-like, dry-month count)
+          items:
+            type: object
+            properties:
+              key: {type: string}
+              label: {type: string}
+              unit: {type: string}
+              reference: {type: number}
+              scenario: {type: number}
+              change: {type: number}
+        series:
+          type: array
+          description: monthly reference vs scenario series for charts
+          items:
+            type: object
+            properties:
+              key: {type: string}
+              points: {type: array, items: {type: object, properties: {month: {type: string}, reference: {type: number}, scenario: {type: number}}}}
+        data_sources: {type: array, items: {type: object, properties: {dataset: {type: string}, source: {type: string}, license: {type: string}, coverage: {type: number}}}}
+        assumptions: {type: array, items: {type: string}}
+        limitations: {type: array, items: {type: string}}
+        insufficient_reason: {type: string, nullable: true}
+        narrative: {type: string, nullable: true}
+        created_at: {type: string, format: date-time}
+    Notification:
+      type: object
+      properties:
+        id: {type: string}
+        kind: {type: string}
+        title: {type: string}
+        body: {type: string}
+        observation_id: {type: string, nullable: true}
+        read_at: {type: string, nullable: true}
+        created_at: {type: string, format: date-time}
+    AuditLog:
+      type: object
+      properties:
+        id: {type: string}
+        actor_id: {type: string, nullable: true}
+        actor_role: {type: string}
+        action: {type: string}
+        entity_type: {type: string}
+        entity_id: {type: string}
+        before: {type: object, nullable: true}
+        after: {type: object, nullable: true}
+        created_at: {type: string, format: date-time}
