@@ -256,18 +256,7 @@ class _MapViewState extends ConsumerState<MapView> {
           ),
         const _MyLocationMarker(),
         const MapControls(),
-        SimpleAttributionWidget(
-          source: Text(
-            s.osmAttribution,
-            style: TextStyle(fontSize: 11, color: eco.isDark && dark ? Colors.white : Colors.black87),
-          ),
-          backgroundColor:
-              (dark ? Colors.black : Colors.white).withValues(alpha: 0.55),
-          onTap: () => launchUrl(
-            Uri.parse('https://www.openstreetmap.org/copyright'),
-            mode: LaunchMode.externalApplication,
-          ),
-        ),
+        _Attribution(text: s.osmAttribution, dark: dark),
       ],
     );
   }
@@ -309,6 +298,51 @@ class _MyLocationMarker extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+
+/// Always-visible OSM attribution (legal requirement), link to the copyright
+/// page. Text scale is clamped so it never overflows on narrow screens.
+class _Attribution extends StatelessWidget {
+  const _Attribution({required this.text, required this.dark});
+  final String text;
+  final bool dark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomLeft,
+      child: SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.sizeOf(context).width * 0.6,
+          ),
+          child: GestureDetector(
+            onTap: () => launchUrl(
+              Uri.parse('https://www.openstreetmap.org/copyright'),
+              mode: LaunchMode.externalApplication,
+            ),
+            child: Container(
+              margin: const EdgeInsets.all(4),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              color: (dark ? Colors.black : Colors.white).withValues(alpha: 0.65),
+              child: Text(
+                text,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textScaler:
+                    MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.3),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: dark ? Colors.white : Colors.black87,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -208,7 +208,7 @@ class RegionSearchField extends ConsumerWidget {
 }
 
 /// Opens a search field in a dialog (header icon on narrow screens).
-Future<void> showSearchDialog(BuildContext context, {required bool region}) {
+Future<void> showSearchDialog(BuildContext context, {required bool region, bool both = false}) {
   return showDialog<void>(
     context: context,
     builder: (ctx) => Dialog(
@@ -222,15 +222,27 @@ Future<void> showSearchDialog(BuildContext context, {required bool region}) {
             height: 300,
             child: Align(
               alignment: Alignment.topCenter,
-              child: region
-                  ? RegionSearchField(
-                      autofocus: true,
-                      onDone: () => Navigator.of(ctx).pop(),
+              child: both
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        GlobalSearchField(
+                          autofocus: true,
+                          onDone: () => Navigator.of(ctx).pop(),
+                        ),
+                        const SizedBox(height: Dimens.md),
+                        RegionSearchField(onDone: () => Navigator.of(ctx).pop()),
+                      ],
                     )
-                  : GlobalSearchField(
-                      autofocus: true,
-                      onDone: () => Navigator.of(ctx).pop(),
-                    ),
+                  : region
+                      ? RegionSearchField(
+                          autofocus: true,
+                          onDone: () => Navigator.of(ctx).pop(),
+                        )
+                      : GlobalSearchField(
+                          autofocus: true,
+                          onDone: () => Navigator.of(ctx).pop(),
+                        ),
             ),
           ),
         ),

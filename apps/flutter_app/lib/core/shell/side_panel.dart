@@ -103,20 +103,22 @@ class _PanelTabBar extends StatelessWidget {
     final s = context.s;
     return SizedBox(
       height: 48,
-      child: ListView(
+      child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: Dimens.sm),
-        children: [
-          for (final t in specs)
-            _TabButton(
-              key: ValueKey('panel-tab-${t.id}'),
-              icon: t.icon,
-              label: t.label(s),
-              selected: t.id == current,
-              color: t.id == current ? eco.teal : eco.textMuted,
-              onTap: () => onSelect(t.id),
-            ),
-        ],
+        child: Row(
+          children: [
+            for (final t in specs)
+              _TabButton(
+                key: ValueKey('panel-tab-${t.id}'),
+                icon: t.icon,
+                label: t.label(s),
+                selected: t.id == current,
+                color: t.id == current ? eco.teal : eco.textMuted,
+                onTap: () => onSelect(t.id),
+              ),
+          ],
+        ),
       ),
     );
   }

@@ -63,22 +63,24 @@ class AppHeader extends ConsumerWidget implements PreferredSizeWidget {
                     ),
                   ] else ...[
                     IconButton(
-                      tooltip: context.s.search,
+                      tooltip: context.s.globalSearchHint,
                       icon: const Icon(Icons.search),
-                      onPressed: () => showSearchDialog(context, region: false),
+                      onPressed: () =>
+                          showSearchDialog(context, region: false, both: compact),
                     ),
-                    IconButton(
-                      tooltip: context.s.regionSearchHint,
-                      icon: const Icon(Icons.travel_explore),
-                      onPressed: () => showSearchDialog(context, region: true),
-                    ),
+                    if (!compact)
+                      IconButton(
+                        tooltip: context.s.regionSearchHint,
+                        icon: const Icon(Icons.travel_explore),
+                        onPressed: () => showSearchDialog(context, region: true),
+                      ),
                   ],
                   const LayerMenuButton(),
                   const Spacer(),
                   if (medium) const DateRangeSegments() else const DateRangeMenu(),
                   const SizedBox(width: Dimens.xs),
                   const NotificationBell(),
-                  const UserMenu(),
+                  UserMenu(iconOnly: !medium),
                 ],
               );
             },
@@ -337,7 +339,10 @@ class NotificationBell extends ConsumerWidget {
 }
 
 class UserMenu extends ConsumerWidget {
-  const UserMenu({super.key});
+  const UserMenu({super.key, this.iconOnly = false});
+
+  /// Compact headers show an icon instead of the "Giriş yap" text button.
+  final bool iconOnly;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -349,6 +354,13 @@ class UserMenu extends ConsumerWidget {
     final user = session.user;
 
     if (!session.isAuthenticated || user == null) {
+      if (iconOnly) {
+        return IconButton(
+          tooltip: s.login,
+          onPressed: () => context.go(AppPaths.login),
+          icon: const Icon(Icons.login),
+        );
+      }
       return TextButton.icon(
         onPressed: () => context.go(AppPaths.login),
         icon: const Icon(Icons.login, size: 18),
