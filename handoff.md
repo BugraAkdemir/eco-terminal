@@ -123,6 +123,19 @@ sahte X-Forwarded-For ile 25 login denemesinde 16 tanesi 429 (XFF yok sayılıyo
 - Eklenti noktası: `backend/internal/app/extensions.go` (Module{Register}, Worker{Start,Stop}); yardımcılar `backend/internal/httpx/README.md`.
 - Küçük not: 3 MB JSON gövde 413 yerine 400 dönüyor (kabul edilebilir).
 
+### 3f. Anlık durum (~33 dk) — ilerleme tahmini **~%55**
+| Ajan | Durum |
+|------|-------|
+| A backend-core | ✅ BİTTİ, main'de (`cde7e97`), e2e + güvenlik denemeleri geçti |
+| E1 simulation | ✅ Faz 1 BİTTİ, main'de (`a8238a8`); **Faz 2 (E2) başladı**: HTTP handler'ları, `/environment/measurements`, compare, startup'ta iklim verisi hazırlama |
+| B flutter-foundation | ⏳ çalışıyor — 3 commit, ~11.700 satır Dart, test commit'i atmış (modeller, API istemcisi, route guard, responsive kabuk, 2x yazı ölçeği); final rapor bekleniyor |
+| D1 intelligence | ⏳ çalışıyor — 4 commit; `ai`, `jobs`, `rag`, `rss` paketleri artık mevcut; son commit "rag: index, hybrid retrieval, access filter, facts and cited answers"; final rapor bekleniyor |
+| C (wizard + offline kuyruk + uzman paneli) | başlamadı — B bitince |
+| F (AI/Resmî/Simülasyon arayüzleri) | başlamadı — B bitince |
+| D2 (AI/RSS handler + wiring) | başlamadı — D1 bitince |
+
+Sıradaki adımlar: D1 → merge + D2; B → merge (analyze/test/build linux kontrolü) + C ve F paralel başlat.
+
 ### 4. Bilinen sorunlar / gözlemler
 - A ve B worktree'leri yanlışlıkla eski `7f6c707` commit'inden açıldı (D1/E1 doğru). A temel dosyaları kopyalayarak toparladı; merge'de yalnız ajanların kendi dizinleri alınacak.
 - A'nın `httpx/audit/password` kodu okundu: ciddi bulgu yok. Merge'de bakılacaklar: genel `BodyLimit` vs medya limiti, reverse-proxy arkasında tek-IP rate limit,
