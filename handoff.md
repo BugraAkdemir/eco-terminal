@@ -101,6 +101,15 @@ Genel ilerleme tahmini: **~%35** (ölçüm değil). Hepsi hâlâ çalışıyor, 
 `docs/architecture/design.md` ("Saha Atlası"): kullanım kolaylığı önce; sade Türkçe, 48dp+ dokunma alanı, çevrimdışı durum görünür, durum etiketleri ikon+yazı,
 AI çıktısı "doğrulanmadı" etiketli, Fraunces + Atkinson Hyperlegible + IBM Plex Mono (gömülü), %200 yazı boyutu testi. B'ye iletildi; C/F ajanları da buna uyacak.
 
+### 3d. E1 (simülasyon) BİTTİ ve main'e merge edildi (`a8238a8`)
+Doğrulama (lead, merge sonrası): `make vet` temiz; `make test` → simulation, simulation/climate, simulation/model, storage `ok` (-race).
+- Gerçek veri: Open-Meteo ERA5 (`models=era5`, 0.25° ≈ 25 km hücre) 1991–2025 günlük yağış/sıcaklık, `datasets/environmental/kastamonu_era5_daily_1991_2025.json` (96 KB, 12.784 gün, 0 null). Lisans CC BY 4.0; ücretsiz API **yalnız ticari olmayan** kullanım (ticari dağıtımda ücretli plan gerekir).
+- Model: SPI (gamma), "wbsi" su dengesi indeksi (SPEI DEĞİL: log-logistik PWM; 4/12 ayda normal fallback), Thornthwaite PET (yalnız sıcaklık → ısınmada PET artışını abartabilir), delta-change senaryo. Referans ve senaryo aynı referans dağılımına göre standartlaştırılıyor.
+- Örnek (−%20 yağış, +2 °C): yıllık yağış 603→482 mm, PET 690→761 mm, su dengesi −87→−279 mm, SPI-3 ≤ −1 ay sayısı 52→122.
+- Yeni migration `0020_simulation_climate_fetches.sql` (çekilen aralık defteri). Phase 2'de OpenAPI'ye eklenecek: `scale` (1/3/6), Result'a `model`,`region_id`,`coverage`, compare payload.
+- Phase 2 (E2) için: handler'lar + `internal/app` kaydı; ilk indirme `Service.EnsureData` ile tetiklenmeli (GET içinde fetch yok). Explainer = D1'in text provider'ı.
+- Yapılmadı: HTTP handler/wiring; wbsi R-SPEI ile çapraz doğrulanmadı.
+
 ### 4. Bilinen sorunlar / gözlemler
 - A ve B worktree'leri yanlışlıkla eski `7f6c707` commit'inden açıldı (D1/E1 doğru). A temel dosyaları kopyalayarak toparladı; merge'de yalnız ajanların kendi dizinleri alınacak.
 - A'nın `httpx/audit/password` kodu okundu: ciddi bulgu yok. Merge'de bakılacaklar: genel `BodyLimit` vs medya limiti, reverse-proxy arkasında tek-IP rate limit,

@@ -41,7 +41,7 @@ Toolchain: Go 1.27.1, Flutter 3.44.6 / Dart 3.12.2, gcc. Verifiable here: backen
 - [ ] **A backend-core** (kod yazıldı, testler/e2e bekleniyor): httpx, auth/roles, audit, observations + state machine, media, geographic (+ real Kastamonu regions), review, notifications, app wiring, `scripts/e2e.sh`, tests; includes `client_ref` idempotency (offline sync)
 - [ ] **B flutter-foundation:** design system, API client + models, auth, responsive shell, map, profile, extension points
 - [ ] **D1 intelligence services:** AI provider adapters, jobs worker, RAG (hybrid retrieval, citations, access filter), RSS ingest + scheduler
-- [ ] **E1 simulation:** Open-Meteo ingestion, climate/drought model, scenario persistence, SIMULATION.md
+- [x] **E1 simulation (merged a8238a8):** Open-Meteo ingestion, climate/drought model, scenario persistence, SIMULATION.md
 
 ### Phase 2 — after Phase 1 merge
 - [ ] D2: HTTP handlers + wiring for `/ai/*`, `/feeds*`, `/admin/feeds*`
