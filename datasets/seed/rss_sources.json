@@ -1,0 +1,92 @@
+[
+  {
+    "name": "Çevre, Şehircilik ve İklim Değişikliği Bakanlığı - Haberler",
+    "organization": "T.C. Çevre, Şehircilik ve İklim Değişikliği Bakanlığı",
+    "feed_url": "https://csb.gov.tr/rss",
+    "category": "climate",
+    "enabled": true,
+    "interval_minutes": 120,
+    "verified_at": "2026-10-20T10:31:00Z"
+  },
+  {
+    "name": "Orman Genel Müdürlüğü - Haberler",
+    "organization": "T.C. Tarım ve Orman Bakanlığı - Orman Genel Müdürlüğü",
+    "feed_url": "https://www.ogm.gov.tr/tr/haber-sitesi/_layouts/15/listfeed.aspx?List=%7b2B7C95DD-2EE4-45AF-8C0E-248300D5EB7D%7d&Source=https%3a//www.ogm.gov.tr/tr/haber-sitesi/Pages/Forms/AllItems.aspx",
+    "category": "forest",
+    "enabled": true,
+    "interval_minutes": 120,
+    "verified_at": "2026-10-20T10:31:00Z"
+  },
+  {
+    "name": "Orman Genel Müdürlüğü - Duyurular",
+    "organization": "T.C. Tarım ve Orman Bakanlığı - Orman Genel Müdürlüğü",
+    "feed_url": "https://www.ogm.gov.tr/tr/duyurular-sitesi/_layouts/15/listfeed.aspx?List=%7bB765E021-81AE-46C0-A35E-311DB67E9436%7d&Source=https%3a//www.ogm.gov.tr/tr/duyurular-sitesi/Pages/Forms/AllItems.aspx",
+    "category": "forest",
+    "enabled": true,
+    "interval_minutes": 240,
+    "verified_at": "2026-10-20T10:31:00Z"
+  },
+  {
+    "name": "Kastamonu Belediyesi - Haber ve Duyurular",
+    "organization": "T.C. Kastamonu Belediyesi",
+    "feed_url": "https://www.kastamonu.bel.tr/feed/",
+    "category": "general",
+    "enabled": true,
+    "interval_minutes": 120,
+    "verified_at": "2026-10-20T10:31:00Z"
+  },
+  {
+    "name": "TÜBİTAK Bilim Genç",
+    "organization": "TÜBİTAK",
+    "feed_url": "https://bilimgenc.tubitak.gov.tr/rss.xml",
+    "category": "general",
+    "enabled": true,
+    "interval_minutes": 360,
+    "verified_at": "2026-10-20T10:31:00Z"
+  },
+  {
+    "name": "Doğa Derneği",
+    "organization": "Doğa Derneği (sivil toplum kuruluşu, resmî kurum değildir)",
+    "feed_url": "https://dogadernegi.org/tr/feed/",
+    "category": "wildlife",
+    "enabled": true,
+    "interval_minutes": 360,
+    "verified_at": "2026-10-20T10:31:00Z"
+  },
+  {
+    "name": "Copernicus Climate Change Service",
+    "organization": "Copernicus (ECMWF / Avrupa Birliği)",
+    "feed_url": "https://climate.copernicus.eu/rss.xml",
+    "category": "climate",
+    "enabled": true,
+    "interval_minutes": 720,
+    "verified_at": "2026-10-20T10:31:00Z"
+  },
+  {
+    "name": "NASA Earth Observatory / NASA Science (Earth)",
+    "organization": "NASA",
+    "feed_url": "https://science.nasa.gov/feed/?science_org=19791%2C22453",
+    "category": "climate",
+    "enabled": true,
+    "interval_minutes": 360,
+    "verified_at": "2026-10-20T10:31:00Z"
+  },
+  {
+    "name": "Nature - Biodiversity",
+    "organization": "Nature Portfolio (Springer Nature)",
+    "feed_url": "https://www.nature.com/subjects/biodiversity.rss",
+    "category": "wildlife",
+    "enabled": true,
+    "interval_minutes": 360,
+    "verified_at": "2026-10-20T10:31:00Z"
+  },
+  {
+    "name": "USGS - Significant Earthquakes (past month)",
+    "organization": "U.S. Geological Survey",
+    "feed_url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.atom",
+    "category": "disaster",
+    "enabled": false,
+    "interval_minutes": 360,
+    "verified_at": "2026-10-20T10:31:00Z"
+  }
+]
