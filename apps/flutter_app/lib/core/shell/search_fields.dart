@@ -98,6 +98,7 @@ class _AsyncSearchFieldState<T extends Object>
                 builder: (_, v, _) => v.text.isEmpty
                     ? const SizedBox.shrink()
                     : IconButton(
+                        tooltip: context.s.cancel,
                         icon: const Icon(Icons.close, size: 16),
                         onPressed: controller.clear,
                       ),

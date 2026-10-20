@@ -104,7 +104,7 @@ class ObservationTile extends ConsumerWidget {
                       runSpacing: 4,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        StatusBadge(status: o.status, compact: true),
+                        StatusBadge(status: o.status, compact: true, explain: false),
                         if (o.locationGeneralized)
                           Tooltip(
                             message: s.locationGeneralized,

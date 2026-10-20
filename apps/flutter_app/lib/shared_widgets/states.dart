@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/errors/api_exception.dart';
 import '../core/l10n/strings.dart';
 import '../core/theme/tokens.dart';
+import 'contour_texture.dart';
 
 /// Honest empty state: icon, title, optional hint and action.
 class EmptyState extends StatelessWidget {
@@ -24,8 +25,9 @@ class EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final eco = context.eco;
-    return Center(
-      child: Padding(
+    return ContourBackground(
+      child: Center(
+        child: Padding(
         padding: EdgeInsets.all(compact ? Dimens.lg : Dimens.xl),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 360),
@@ -60,6 +62,7 @@ class EmptyState extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }
@@ -188,8 +191,12 @@ class SkeletonLoader extends StatelessWidget {
 
 /// Banner shown when the last request failed with a transport error.
 class OfflineBanner extends StatelessWidget {
-  const OfflineBanner({super.key, this.onRetry});
+  const OfflineBanner({super.key, this.onRetry, this.queueEnabled = false});
   final VoidCallback? onRetry;
+
+  /// True when a feature module keeps unsent records on the device; only then
+  /// the banner promises that records are stored on the phone.
+  final bool queueEnabled;
 
   @override
   Widget build(BuildContext context) {
@@ -210,8 +217,8 @@ class OfflineBanner extends StatelessWidget {
               const SizedBox(width: Dimens.sm),
               Expanded(
                 child: Text(
-                  s.offlineBanner,
-                  style: TextStyle(color: eco.text, fontSize: 13),
+                  queueEnabled ? s.offlineBannerQueue : s.offlineBanner,
+                  style: TextStyle(color: eco.text, fontSize: 14),
                 ),
               ),
               if (onRetry != null)

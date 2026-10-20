@@ -52,8 +52,8 @@ class MapControls extends ConsumerWidget {
           child: InkWell(
             onTap: onTap,
             child: SizedBox(
-              width: 40,
-              height: 40,
+              width: 48,
+              height: 48,
               child: Icon(icon, size: 20, color: active ? eco.teal : eco.text),
             ),
           ),

@@ -11,6 +11,7 @@ import '../session/session_controller.dart';
 import '../theme/tokens.dart';
 import '../../shared_widgets/shared_widgets.dart';
 import 'app_header.dart';
+import 'offline_queue.dart';
 
 /// Frame around every in-app page: offline banner, header, content and (on
 /// mobile) the bottom navigation Harita / Gözlem Ekle / AI / Profil.
@@ -30,6 +31,7 @@ class AppShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(notificationsPollerProvider);
     final online = ref.watch(networkOnlineProvider);
+    final queue = ref.watch(offlineQueueProvider);
     final width = MediaQuery.sizeOf(context).width;
     final mobile = screenSizeForWidth(width) == ScreenSize.mobile;
     final s = context.s;
@@ -38,7 +40,11 @@ class AppShell extends ConsumerWidget {
     return Scaffold(
       body: Column(
         children: [
-          if (!online) OfflineBanner(onRetry: () => _checkConnection(ref)),
+          if (!online)
+            OfflineBanner(
+              onRetry: () => _checkConnection(ref),
+              queueEnabled: queue.supported,
+            ),
           const AppHeader(),
           Expanded(child: child),
         ],
@@ -75,7 +81,11 @@ class AppShell extends ConsumerWidget {
                   label: s.navAi,
                 ),
                 NavigationDestination(
-                  icon: const Icon(Icons.person_outline),
+                  icon: Badge(
+                    isLabelVisible: queue.pending > 0,
+                    label: Text('${queue.pending}'),
+                    child: const Icon(Icons.person_outline),
+                  ),
                   selectedIcon: const Icon(Icons.person),
                   label: s.navProfile,
                 ),

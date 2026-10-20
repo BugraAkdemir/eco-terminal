@@ -91,32 +91,51 @@ class EcoColors extends ThemeExtension<EcoColors> {
     surface: Color(0xFFFFFFFF),
     surfaceAlt: Color(0xFFE8F0F3),
     sidebar: Color(0xFFE3EDF2),
-    green: Color(0xFF1C9B57),
-    teal: Color(0xFF128F82),
-    warning: Color(0xFFB9731A),
-    critical: Color(0xFFC8443F),
-    info: Color(0xFF2B7BBD),
+    green: Color(0xFF14703C),
+    teal: Color(0xFF0B766B),
+    warning: Color(0xFF8A5209),
+    critical: Color(0xFFB3322D),
+    info: Color(0xFF1F6DAE),
     text: Color(0xFF0B1C27),
-    textMuted: Color(0xFF506672),
-    border: Color(0x330B1C27),
-    glass: Color(0xCCFFFFFF),
+    textMuted: Color(0xFF455A66),
+    border: Color(0x4D0B1C27),
+    glass: Color(0xE6FFFFFF),
+    isDark: false,
+  );
+
+  /// Outdoor / high-contrast: pure white surfaces, near-black text (>= 7:1),
+  /// strong borders.
+  static const highContrast = EcoColors(
+    bg: Color(0xFFFFFFFF),
+    surface: Color(0xFFFFFFFF),
+    surfaceAlt: Color(0xFFEFEFEF),
+    sidebar: Color(0xFFF5F5F5),
+    green: Color(0xFF0B5A2B),
+    teal: Color(0xFF00574E),
+    warning: Color(0xFF6B3C00),
+    critical: Color(0xFF8E1A16),
+    info: Color(0xFF0A4F8C),
+    text: Color(0xFF000000),
+    textMuted: Color(0xFF2B2B2B),
+    border: Color(0xFF000000),
+    glass: Color(0xFFFFFFFF),
     isDark: false,
   );
 
   Color statusColor(ObservationStatus s) {
     switch (s) {
       case ObservationStatus.draft:
-        return isDark ? const Color(0xFF8A9BA6) : const Color(0xFF6B7C86);
+        return isDark ? const Color(0xFF9DB0BB) : const Color(0xFF51626C);
       case ObservationStatus.submitted:
         return info;
       case ObservationStatus.aiProcessed:
-        return isDark ? const Color(0xFFA78BFA) : const Color(0xFF7C5CD6);
+        return isDark ? const Color(0xFFB7A0FB) : const Color(0xFF6540C8);
       case ObservationStatus.underReview:
         return warning;
       case ObservationStatus.verified:
         return green;
       case ObservationStatus.needsInformation:
-        return isDark ? const Color(0xFFF28CB1) : const Color(0xFFC2457C);
+        return isDark ? const Color(0xFFF28CB1) : const Color(0xFFA8265F);
       case ObservationStatus.rejected:
         return critical;
       case ObservationStatus.resolved:
@@ -211,6 +230,30 @@ IconData categoryIcon(ObservationCategory c) {
       return Icons.healing;
     case ObservationCategory.other:
       return Icons.place;
+  }
+}
+
+/// Marker outline shape per category, so categories differ by SHAPE and icon,
+/// not colour alone.
+OutlinedBorder categoryShape(ObservationCategory c, BorderSide side) {
+  switch (c) {
+    case ObservationCategory.animal:
+      return CircleBorder(side: side);
+    case ObservationCategory.plant:
+      return RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(9),
+        side: side,
+      );
+    case ObservationCategory.water:
+      return StarBorder.polygon(sides: 4, pointRounding: 0.25, side: side);
+    case ObservationCategory.forest:
+      return StarBorder.polygon(sides: 6, pointRounding: 0.15, side: side);
+    case ObservationCategory.pollution:
+      return StarBorder.polygon(sides: 3, pointRounding: 0.2, side: side);
+    case ObservationCategory.injuredWildlife:
+      return StarBorder.polygon(sides: 8, side: side);
+    case ObservationCategory.other:
+      return StadiumBorder(side: side);
   }
 }
 

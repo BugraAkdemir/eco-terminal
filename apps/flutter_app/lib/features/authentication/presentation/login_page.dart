@@ -114,6 +114,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 decoration: InputDecoration(
                   labelText: s.password,
                   suffixIcon: IconButton(
+                    tooltip: s.password,
                     icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
                     onPressed: () => setState(() => _obscure = !_obscure),
                   ),

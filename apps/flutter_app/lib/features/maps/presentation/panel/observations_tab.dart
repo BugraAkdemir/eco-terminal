@@ -115,10 +115,13 @@ class ObservationsTab extends ConsumerWidget {
                     );
                   }
                   final o = data.items[i];
-                  return ObservationTile(
-                    observation: o,
-                    selected: o.id == selectedId,
-                    onTap: () => focusObservation(ref, o.id, o.lat, o.lon),
+                  return Reveal(
+                    index: i,
+                    child: ObservationTile(
+                      observation: o,
+                      selected: o.id == selectedId,
+                      onTap: () => focusObservation(ref, o.id, o.lat, o.lon),
+                    ),
                   );
                 },
               );

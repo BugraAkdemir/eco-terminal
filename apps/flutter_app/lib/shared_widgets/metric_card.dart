@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/theme/app_theme.dart' show monoStyle;
 import '../core/theme/tokens.dart';
 import 'panels.dart';
 
@@ -50,10 +51,12 @@ class MetricCard extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     value,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: eco.text,
-                        ),
+                    style: monoStyle(
+                      Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: eco.text,
+                          ),
+                    ),
                   ),
                 ),
                 Text(

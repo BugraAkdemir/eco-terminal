@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../core/theme/tokens.dart';
+import 'contour_texture.dart';
 
 /// Solid surface with a thin border: the default container.
 class SolidPanel extends StatelessWidget {
@@ -13,8 +14,11 @@ class SolidPanel extends StatelessWidget {
     this.color,
     this.radius = Dimens.radius,
     this.borderColor,
+    this.texture = false,
   });
 
+  /// Adds the faint contour-line texture behind the content.
+  final bool texture;
   final Widget child;
   final EdgeInsetsGeometry padding;
   final Color? color;
@@ -30,7 +34,14 @@ class SolidPanel extends StatelessWidget {
         borderRadius: BorderRadius.circular(radius),
         border: Border.all(color: borderColor ?? eco.border),
       ),
-      child: Padding(padding: padding, child: child),
+      child: texture
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(radius),
+              child: ContourBackground(
+                child: Padding(padding: padding, child: child),
+              ),
+            )
+          : Padding(padding: padding, child: child),
     );
   }
 }

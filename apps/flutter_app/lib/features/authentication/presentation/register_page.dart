@@ -98,6 +98,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   labelText: s.password,
                   helperText: s.passwordTooShort,
                   suffixIcon: IconButton(
+                    tooltip: s.password,
                     icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
                     onPressed: () => setState(() => _obscure = !_obscure),
                   ),

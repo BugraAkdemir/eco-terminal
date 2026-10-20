@@ -140,21 +140,24 @@ class _TabletLayout extends ConsumerWidget {
       children: [
         const Positioned.fill(child: MapStack()),
         const _AddObservationFab(),
-        if (open)
-          Positioned(
-            key: const ValueKey('tablet-panel'),
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: panelWidth,
-            child: Material(
-              elevation: 8,
-              child: SidePanel(
-                onCollapse: () =>
-                    ref.read(tabletPanelOpenProvider.notifier).set(false),
-              ),
+        AnimatedPositioned(
+          key: const ValueKey('tablet-panel'),
+          duration: (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
+              ? Duration.zero
+              : const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+          left: open ? 0 : -panelWidth,
+          top: 0,
+          bottom: 0,
+          width: panelWidth,
+          child: Material(
+            elevation: 8,
+            child: SidePanel(
+              onCollapse: () =>
+                  ref.read(tabletPanelOpenProvider.notifier).set(false),
             ),
           ),
+        ),
         if (!open)
           Positioned(
             left: 0,
@@ -197,18 +200,31 @@ class _MobileLayout extends ConsumerWidget {
         Positioned(
           left: Dimens.md,
           bottom: 36,
-          child: FilledButton.tonalIcon(
-            key: const ValueKey('mobile-open-panel'),
-            onPressed: () => _openSheet(context),
-            icon: const Icon(Icons.expand_less),
-            label: Text(s.openPanel),
+          child: Row(
+            children: [
+              FilledButton.tonalIcon(
+                key: const ValueKey('mobile-open-panel'),
+                onPressed: () => _openSheet(context, ref, PanelTabIds.information),
+                icon: const Icon(Icons.expand_less),
+                label: Text(s.openPanel),
+              ),
+              const SizedBox(width: Dimens.sm),
+              FilledButton.tonalIcon(
+                key: const ValueKey('mobile-open-list'),
+                onPressed: () =>
+                    _openSheet(context, ref, PanelTabIds.observations),
+                icon: const Icon(Icons.list_alt),
+                label: Text(s.listView),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
-  void _openSheet(BuildContext context) {
+  void _openSheet(BuildContext context, WidgetRef ref, String tab) {
+    ref.read(panelTabProvider.notifier).select(tab);
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,

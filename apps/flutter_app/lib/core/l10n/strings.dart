@@ -27,10 +27,12 @@ class AppStrings {
         'Kastamonu biyolojik çeşitlilik izleme platformu',
         'Kastamonu biodiversity monitoring platform',
       );
-  String get retry => pick('Tekrar dene', 'Retry');
+  String get retry => pick('Tekrar dene', 'Try again');
   String get cancel => pick('Vazgeç', 'Cancel');
   String get confirm => pick('Onayla', 'Confirm');
   String get save => pick('Kaydet', 'Save');
+  String get continueLabel => pick('Devam', 'Continue');
+  String get send => pick('Gönder', 'Send');
   String get close => pick('Kapat', 'Close');
   String get delete => pick('Sil', 'Delete');
   String get search => pick('Ara', 'Search');
@@ -50,32 +52,49 @@ class AppStrings {
       );
 
   // --- Errors / connectivity ----------------------------------------------
-  String get errorGeneric =>
-      pick('Bir şeyler ters gitti.', 'Something went wrong.');
-  String get errorNetwork => pick(
-        'Sunucuya ulaşılamıyor. Bağlantınızı kontrol edin.',
-        'Cannot reach the server. Check your connection.',
+  String get errorGeneric => pick(
+        'Bir şeyler ters gitti. Biraz sonra tekrar deneyin.',
+        'Something went wrong. Please try again in a moment.',
       );
-  String get errorTimeout =>
-      pick('Sunucu yanıt vermedi (zaman aşımı).', 'The server timed out.');
+  String get errorNetwork => pick(
+        'Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.',
+        'Could not reach the server. Check your internet connection and try again.',
+      );
+  String get errorTimeout => pick(
+        'Sunucu zamanında yanıt vermedi. Biraz sonra tekrar deneyin.',
+        'The server did not answer in time. Please try again in a moment.',
+      );
   String get errorUnauthorized => pick(
         'Oturumunuz sona erdi. Lütfen tekrar giriş yapın.',
         'Your session has ended. Please sign in again.',
       );
-  String get errorForbidden =>
-      pick('Bu işlem için yetkiniz yok.', 'You are not allowed to do this.');
-  String get errorNotFound => pick('Kayıt bulunamadı.', 'Not found.');
+  String get errorForbidden => pick(
+        'Bu işlem için yetkiniz yok. Başka bir hesapla giriş yapmayı deneyin.',
+        'You are not allowed to do this. Try signing in with another account.',
+      );
+  String get errorNotFound => pick(
+        'Kayıt bulunamadı. Silinmiş olabilir.',
+        'Record not found. It may have been deleted.',
+      );
   String get errorRateLimited => pick(
         'Çok fazla istek. Biraz bekleyip tekrar deneyin.',
         'Too many requests. Please wait and try again.',
       );
   String get errorAiNotConfigured => pick(
-        'Yapay zekâ sağlayıcısı yapılandırılmamış.',
-        'The AI provider is not configured.',
+        'Yapay zekâ bu sunucuda kapalı. Kaydınızı yine de gönderebilirsiniz.',
+        'AI is switched off on this server. You can still send your record.',
       );
   String get offlineBanner => pick(
-        'Çevrimdışısınız. Bağlantı yeniden kurulana kadar veriler güncellenmez.',
-        'You are offline. Data will not refresh until the connection returns.',
+        'Çevrimdışı — bağlantı gelince veriler yenilenir.',
+        'Offline — data refreshes when the connection returns.',
+      );
+  String get offlineBannerQueue => pick(
+        'Çevrimdışı — kayıtlarınız telefonda saklanır.',
+        'Offline — your records are kept on this phone.',
+      );
+  String get emergencyNotice => pick(
+        "Acil durumda 112'yi arayın; uygulama resmî kuruma bildirim iletmez.",
+        'In an emergency call 112. This app does not forward reports to any official body.',
       );
   String get sessionExpired => pick(
         'Oturum süreniz doldu. Lütfen tekrar giriş yapın.',
@@ -114,7 +133,7 @@ class AppStrings {
 
   // --- Auth ----------------------------------------------------------------
   String get login => pick('Giriş yap', 'Sign in');
-  String get register => pick('Kayıt ol', 'Create account');
+  String get register => pick('Hesap oluştur', 'Create account');
   String get logout => pick('Çıkış yap', 'Sign out');
   String get email => pick('E-posta', 'Email');
   String get password => pick('Parola', 'Password');
@@ -124,8 +143,8 @@ class AppStrings {
         'Enter a valid email address.',
       );
   String get passwordTooShort => pick(
-        'Parola en az 10 karakter olmalı.',
-        'Password must be at least 10 characters.',
+        'Parola en az 10 karakter olmalı. Daha uzun bir parola yazın.',
+        'Password must be at least 10 characters. Please use a longer one.',
       );
   String get required => pick('Bu alan zorunlu.', 'This field is required.');
   String get noAccountYet => pick('Hesabınız yok mu?', 'No account yet?');
@@ -171,6 +190,9 @@ class AppStrings {
   String get markRead => pick('Okundu işaretle', 'Mark as read');
   String get language => pick('Dil', 'Language');
   String get theme => pick('Tema', 'Theme');
+  String get highContrast =>
+      pick('Güneşte okunaklı tema', 'Outdoor high-contrast theme');
+  String get listView => pick('Liste', 'List');
   String get themeDark => pick('Koyu', 'Dark');
   String get themeLight => pick('Açık', 'Light');
   String get infoPanel =>
@@ -276,9 +298,11 @@ class AppStrings {
   String get noObservations =>
       pick('Kayıt bulunamadı.', 'No records found.');
   String get detail => pick('Ayrıntı', 'Details');
-  String get userGuess => pick('Kullanıcı tahmini', 'User guess');
+  String get userGuess => pick('Sizin tahmininiz', 'Your guess');
+  String get userGuessOther => pick('Gözlemcinin tahmini', "Observer's guess");
   String get verifiedSpecies => pick('Doğrulanmış tür', 'Verified species');
-  String get aiSuggestion => pick('AI önerisi (doğrulanmamış)', 'AI suggestion (unverified)');
+  String get aiSuggestion =>
+      pick('Yapay zekâ önerisi — doğrulanmadı', 'AI suggestion — not verified');
   String get aiDisclaimerDefault => pick(
         'Bu öneri yapay zekâ tarafından üretilmiştir ve uzman tarafından doğrulanmamıştır.',
         'This suggestion was produced by AI and has not been verified by an expert.',
@@ -342,19 +366,67 @@ class AppStrings {
       case ObservationStatus.submitted:
         return pick('Gönderildi', 'Submitted');
       case ObservationStatus.aiProcessed:
-        return pick('AI işledi', 'AI processed');
+        return pick('Yapay zekâ ön inceleme yaptı', 'AI pre-check done');
       case ObservationStatus.underReview:
-        return pick('İncelemede', 'Under review');
+        return pick('Uzman inceliyor', 'Expert is reviewing');
       case ObservationStatus.verified:
-        return pick('Doğrulandı', 'Verified');
+        return pick('Uzman onayladı', 'Expert verified');
       case ObservationStatus.needsInformation:
-        return pick('Bilgi gerekli', 'Needs information');
+        return pick('Ek bilgi istendi', 'More info requested');
       case ObservationStatus.rejected:
         return pick('Reddedildi', 'Rejected');
       case ObservationStatus.resolved:
         return pick('Çözüldü', 'Resolved');
       case ObservationStatus.unknown:
         return pick('Bilinmiyor', 'Unknown');
+    }
+  }
+
+  /// One-line plain-language explanation shown when a status tag is tapped.
+  String statusExplanation(ObservationStatus s) {
+    switch (s) {
+      case ObservationStatus.draft:
+        return pick(
+          'Henüz göndermediniz. Hazır olunca gönderebilirsiniz.',
+          'You have not sent it yet. Send it when you are ready.',
+        );
+      case ObservationStatus.submitted:
+        return pick(
+          'Kaydınız bize ulaştı. Sırada ön inceleme var.',
+          'We received your record. A first check is next.',
+        );
+      case ObservationStatus.aiProcessed:
+        return pick(
+          'Yapay zekâ fotoğrafa baktı. Bu bir öneridir, uzman henüz bakmadı.',
+          'AI looked at the photo. This is only a suggestion; no expert has checked it yet.',
+        );
+      case ObservationStatus.underReview:
+        return pick(
+          'Bir uzman kaydınızı inceliyor.',
+          'An expert is reviewing your record.',
+        );
+      case ObservationStatus.verified:
+        return pick(
+          'Bir uzman kaydı onayladı. Haritada herkes görebilir.',
+          'An expert confirmed this record. Everyone can see it on the map.',
+        );
+      case ObservationStatus.needsInformation:
+        return pick(
+          'Uzman ek bilgi istiyor. Kaydı açıp yanıt verin.',
+          'The expert needs more details. Open the record and answer.',
+        );
+      case ObservationStatus.rejected:
+        return pick(
+          'Kayıt kabul edilmedi. Nedeni uzmanın notunda yazar.',
+          'The record was not accepted. The reason is in the expert note.',
+        );
+      case ObservationStatus.resolved:
+        return pick(
+          'Bu sorun bildirimi kapatıldı.',
+          'This issue report has been closed.',
+        );
+      case ObservationStatus.unknown:
+        return pick('Durum bilinmiyor.', 'Status unknown.');
     }
   }
 

@@ -122,8 +122,8 @@ class _MapViewState extends ConsumerState<MapView> {
           return Marker(
             key: key,
             point: LatLng(o.lat, o.lon),
-            width: 36,
-            height: 36,
+            width: 44,
+            height: 44,
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () => ref
@@ -246,7 +246,7 @@ class _MapViewState extends ConsumerState<MapView> {
             options: MarkerClusterLayerOptions(
               markers: _markers,
               maxClusterRadius: 56,
-              size: const Size(40, 40),
+              size: const Size(44, 44),
               disableClusteringAtZoom: 16,
               markerChildBehavior: true,
               showPolygon: false,

@@ -4,51 +4,79 @@ import '../core/l10n/strings.dart';
 import '../core/models/enums.dart';
 import '../core/theme/tokens.dart';
 
-/// Status pill: distinct colour AND icon AND label for each of the 8
-/// observation statuses.
+/// Observation status as a "survey tag" stamp: icon + text + colour (never
+/// colour alone). Tapping shows a one-line plain-language explanation
+/// (disabled with [explain] false, e.g. inside tappable list rows).
 class StatusBadge extends StatelessWidget {
-  const StatusBadge({super.key, required this.status, this.compact = false});
+  const StatusBadge({
+    super.key,
+    required this.status,
+    this.compact = false,
+    this.explain = true,
+  });
 
   final ObservationStatus status;
   final bool compact;
+  final bool explain;
 
   @override
   Widget build(BuildContext context) {
     final eco = context.eco;
+    final s = context.s;
     final color = eco.statusColor(status);
-    final label = context.s.statusLabel(status);
-    return Semantics(
-      label: label,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: compact ? 6 : 10,
-          vertical: compact ? 2 : 4,
-        ),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.14),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: color.withValues(alpha: 0.7)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(statusIcon(status), size: compact ? 12 : 14, color: color),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: color,
-                  fontSize: compact ? 11 : 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+    final label = s.statusLabel(status);
+    final explanation = s.statusExplanation(status);
+
+    final tag = Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 8 : 10,
+        vertical: compact ? 3 : 5,
+      ),
+      decoration: ShapeDecoration(
+        color: color.withValues(alpha: eco.isDark ? 0.14 : 0.10),
+        // Squared "tag" with a thick border, like a stamped field label.
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(5),
+          side: BorderSide(color: color, width: 1.6),
         ),
       ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(statusIcon(status), size: compact ? 14 : 16, color: color),
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 2,
+              softWrap: true,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: color,
+                fontSize: compact ? 13 : 14,
+                height: 1.15,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return Semantics(
+      container: true,
+      label: '${s.pick('Durum', 'Status')}: $label',
+      hint: explanation,
+      excludeSemantics: true,
+      child: explain
+          ? Tooltip(
+              message: explanation,
+              triggerMode: TooltipTriggerMode.tap,
+              showDuration: const Duration(seconds: 5),
+              child: tag,
+            )
+          : tag,
     );
   }
 }

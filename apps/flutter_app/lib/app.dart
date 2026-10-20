@@ -16,13 +16,14 @@ class EcoApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     final locale = ref.watch(localeProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final highContrast = ref.watch(highContrastProvider);
     return MaterialApp.router(
       title: 'Eco Terminal',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
-      theme: AppTheme.light(),
+      theme: highContrast ? AppTheme.highContrast() : AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      themeMode: themeMode,
+      themeMode: highContrast ? ThemeMode.light : themeMode,
       locale: locale,
       supportedLocales: AppStrings.supportedLocales,
       localizationsDelegates: const [

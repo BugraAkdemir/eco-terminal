@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 
 import 'tokens.dart';
 
-/// Offline-safe font stack: no network font loading. The first family found
-/// on the platform wins (Roboto on Android, Segoe UI on Windows, SF on Apple,
-/// Noto/Ubuntu/DejaVu on Linux).
-const List<String> kFontFallback = [
-  'Inter',
-  'Roboto',
+/// Font families. Fraunces (display), Atkinson Hyperlegible (body/UI) and
+/// IBM Plex Mono (coordinates, ids, counts) are OFL fonts meant to be bundled
+/// under `assets/fonts/` (see docs/architecture/flutter.md). Until the files
+/// are added the platform fallbacks below are used, so nothing needs the
+/// network at runtime.
+const String kDisplayFont = 'Fraunces';
+const String kBodyFont = 'AtkinsonHyperlegible';
+const String kMonoFont = 'IBMPlexMono';
+
+const List<String> kBodyFallback = [
+  'Atkinson Hyperlegible',
   'Segoe UI',
   'Noto Sans',
   'Ubuntu',
@@ -15,12 +20,36 @@ const List<String> kFontFallback = [
   'DejaVu Sans',
   'Arial',
 ];
+const List<String> kDisplayFallback = [
+  'Fraunces',
+  'Georgia',
+  'Noto Serif',
+  'DejaVu Serif',
+  'Times New Roman',
+];
+const List<String> kMonoFallback = [
+  'IBM Plex Mono',
+  'Noto Sans Mono',
+  'DejaVu Sans Mono',
+  'Consolas',
+  'Courier New',
+];
+
+/// Monospace style for coordinates, reference numbers (ET-2026-000123) and
+/// counts.
+TextStyle monoStyle([TextStyle? base]) => (base ?? const TextStyle()).copyWith(
+      fontFamily: kMonoFont,
+      fontFamilyFallback: kMonoFallback,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
 
 class AppTheme {
   const AppTheme._();
 
   static ThemeData dark() => _build(EcoColors.dark, Brightness.dark);
   static ThemeData light() => _build(EcoColors.light, Brightness.light);
+  static ThemeData highContrast() =>
+      _build(EcoColors.highContrast, Brightness.light);
 
   static ThemeData _build(EcoColors c, Brightness brightness) {
     final scheme = ColorScheme(
@@ -44,13 +73,33 @@ class AppTheme {
       brightness: brightness,
       colorScheme: scheme,
       scaffoldBackgroundColor: c.bg,
-      fontFamilyFallback: kFontFallback,
-      visualDensity: VisualDensity.adaptivePlatformDensity,
+      fontFamily: kBodyFont,
+      fontFamilyFallback: kBodyFallback,
+      visualDensity: VisualDensity.standard,
     );
-    final textTheme = base.textTheme.apply(
-      bodyColor: c.text,
-      displayColor: c.text,
-      fontFamilyFallback: kFontFallback,
+    TextStyle? display(TextStyle? t) => t?.copyWith(
+          fontFamily: kDisplayFont,
+          fontFamilyFallback: kDisplayFallback,
+          fontWeight: FontWeight.w600,
+        );
+    final tt = base.textTheme.apply(bodyColor: c.text, displayColor: c.text);
+    // Body text >= 16sp; small text never below 13sp.
+    final textTheme = tt.copyWith(
+      displayLarge: display(tt.displayLarge),
+      displayMedium: display(tt.displayMedium),
+      displaySmall: display(tt.displaySmall),
+      headlineLarge: display(tt.headlineLarge),
+      headlineMedium: display(tt.headlineMedium),
+      headlineSmall: display(tt.headlineSmall),
+      titleLarge: display(tt.titleLarge),
+      titleMedium: tt.titleMedium?.copyWith(fontSize: 17, fontWeight: FontWeight.w700),
+      titleSmall: tt.titleSmall?.copyWith(fontSize: 15, fontWeight: FontWeight.w700),
+      bodyLarge: tt.bodyLarge?.copyWith(fontSize: 17),
+      bodyMedium: tt.bodyMedium?.copyWith(fontSize: 16),
+      bodySmall: tt.bodySmall?.copyWith(fontSize: 14),
+      labelLarge: tt.labelLarge?.copyWith(fontSize: 15),
+      labelMedium: tt.labelMedium?.copyWith(fontSize: 14),
+      labelSmall: tt.labelSmall?.copyWith(fontSize: 13),
     );
 
     const radius = BorderRadius.all(Radius.circular(Dimens.radius));
@@ -101,26 +150,33 @@ class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          minimumSize: const Size(0, 44),
+          minimumSize: const Size(0, 48),
           shape: const RoundedRectangleBorder(borderRadius: radius),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size(0, 44),
+          minimumSize: const Size(0, 48),
           foregroundColor: c.text,
           side: BorderSide(color: c.border),
           shape: const RoundedRectangleBorder(borderRadius: radius),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(foregroundColor: c.teal),
+        style: TextButton.styleFrom(
+          foregroundColor: c.teal,
+          minimumSize: const Size(48, 48),
+        ),
+      ),
+      focusColor: c.teal.withValues(alpha: 0.2),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: Colors.transparent,
         selectedColor: c.teal.withValues(alpha: 0.2),
         side: BorderSide(color: c.border),
-        labelStyle: TextStyle(color: c.text, fontSize: 13),
+        labelStyle: TextStyle(color: c.text, fontSize: 14),
         shape: const StadiumBorder(),
         showCheckmark: false,
       ),
@@ -141,7 +197,7 @@ class AppTheme {
         backgroundColor: c.surface,
         indicatorColor: c.teal.withValues(alpha: 0.2),
         labelTextStyle: WidgetStatePropertyAll(
-          TextStyle(fontSize: 12, color: c.text),
+          TextStyle(fontSize: 13, color: c.text),
         ),
       ),
       tabBarTheme: TabBarThemeData(

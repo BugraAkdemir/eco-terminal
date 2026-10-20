@@ -5,6 +5,7 @@ import '../../features/maps/presentation/map_controls.dart';
 import '../extensions/extension_registry.dart';
 import '../l10n/strings.dart';
 import '../theme/tokens.dart';
+import '../../shared_widgets/contour_texture.dart';
 import 'panel_tabs.dart';
 
 /// "Information & Intelligence" panel: title, active-region chip, 5 tabs.
@@ -35,7 +36,9 @@ class SidePanel extends ConsumerWidget {
 
     return Material(
       color: eco.sidebar,
-      child: Column(
+      child: ContourBackground(
+        seed: 3,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (showHeader)
@@ -78,6 +81,7 @@ class SidePanel extends ConsumerWidget {
           Expanded(child: buildPanelTab(context, registry, current)),
         ],
       ),
+      ),
     );
   }
 }
@@ -98,7 +102,7 @@ class _PanelTabBar extends StatelessWidget {
     final eco = context.eco;
     final s = context.s;
     return SizedBox(
-      height: 44,
+      height: 48,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: Dimens.sm),

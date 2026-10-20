@@ -5,6 +5,7 @@ import '../../../core/api/providers.dart';
 import '../../../core/l10n/format.dart';
 import '../../../core/l10n/strings.dart';
 import '../../../core/models/models.dart';
+import '../../../core/theme/app_theme.dart' show monoStyle;
 import '../../../core/theme/tokens.dart';
 import '../../../shared_widgets/shared_widgets.dart';
 import '../data/map_providers.dart';
@@ -154,6 +155,11 @@ class ObservationDetailBody extends ConsumerWidget {
             style: textTheme.bodySmall?.copyWith(color: eco.textMuted),
           ),
         ],
+        if (detail.category == ObservationCategory.injuredWildlife ||
+            detail.details['fire_trace'] == true) ...[
+          const SizedBox(height: Dimens.md),
+          const EmergencyNotice(),
+        ],
         if (detail.media.isNotEmpty) ...[
           const SizedBox(height: Dimens.lg),
           SizedBox(
@@ -188,7 +194,7 @@ class ObservationDetailBody extends ConsumerWidget {
           ),
         ],
         const SizedBox(height: Dimens.lg),
-        _Field(label: s.reference, value: detail.referenceNo),
+        _Field(label: s.reference, value: detail.referenceNo, mono: true),
         if (detail.speciesVerified.isNotEmpty)
           _Field(
             label: s.verifiedSpecies,
@@ -196,7 +202,7 @@ class ObservationDetailBody extends ConsumerWidget {
             valueColor: eco.green,
           ),
         if (detail.speciesGuess.isNotEmpty)
-          _Field(label: s.userGuess, value: detail.speciesGuess),
+          _Field(label: s.userGuessOther, value: detail.speciesGuess),
         _Field(
           label: s.observedAt,
           value: formatDateTime(context, detail.observedAt),
@@ -273,10 +279,16 @@ class _Pill extends StatelessWidget {
 }
 
 class _Field extends StatelessWidget {
-  const _Field({required this.label, required this.value, this.valueColor});
+  const _Field({
+    required this.label,
+    required this.value,
+    this.valueColor,
+    this.mono = false,
+  });
   final String label;
   final String value;
   final Color? valueColor;
+  final bool mono;
 
   @override
   Widget build(BuildContext context) {
@@ -299,10 +311,10 @@ class _Field extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: valueColor),
+              style: (mono ? monoStyle() : const TextStyle()).copyWith(
+                fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize,
+                color: valueColor,
+              ),
             ),
           ),
         ],

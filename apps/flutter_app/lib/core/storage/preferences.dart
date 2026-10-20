@@ -45,3 +45,20 @@ class ThemeModeController extends Notifier<ThemeMode> {
 
 final themeModeProvider =
     NotifierProvider<ThemeModeController, ThemeMode>(ThemeModeController.new);
+
+/// Outdoor / high-contrast theme (white surfaces, >= 7:1 text).
+class HighContrastController extends Notifier<bool> {
+  static const _key = 'pref_high_contrast';
+
+  @override
+  bool build() =>
+      ref.watch(sharedPreferencesProvider).getBool(_key) ?? false;
+
+  Future<void> set(bool v) async {
+    state = v;
+    await ref.read(sharedPreferencesProvider).setBool(_key, v);
+  }
+}
+
+final highContrastProvider =
+    NotifierProvider<HighContrastController, bool>(HighContrastController.new);

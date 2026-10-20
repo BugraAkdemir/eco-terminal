@@ -378,6 +378,10 @@ class UserMenu extends ConsumerWidget {
             await ref.read(themeModeProvider.notifier).set(
                   themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark,
                 );
+          case 'contrast':
+            await ref
+                .read(highContrastProvider.notifier)
+                .set(!ref.read(highContrastProvider));
           case 'logout':
             await ref.read(sessionProvider.notifier).logout();
         }
@@ -412,6 +416,11 @@ class UserMenu extends ConsumerWidget {
           child: Text(
             '${s.theme}: ${themeMode == ThemeMode.dark ? s.themeLight : s.themeDark}',
           ),
+        ),
+        CheckedPopupMenuItem(
+          value: 'contrast',
+          checked: ref.read(highContrastProvider),
+          child: Text(s.highContrast),
         ),
         const PopupMenuDivider(),
         PopupMenuItem(value: 'logout', child: Text(s.logout)),
