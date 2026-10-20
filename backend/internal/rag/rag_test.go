@@ -580,3 +580,64 @@ func TestChunkerIsDeterministicAndSentenceAware(t *testing.T) {
 		t.Fatalf("fts query = %s", q)
 	}
 }
+
+// Both workers finish the initial missing-document lookup before either can
+// write. Embedding remains outside the SQLite transaction.
+type concurrentEmbedding struct {
+	ready   chan struct{}
+	release chan struct{}
+}
+
+func (p *concurrentEmbedding) Embed(ctx context.Context, texts []string) (ai.EmbeddingResult, error) {
+	p.ready <- struct{}{}
+	select {
+	case <-p.release:
+	case <-ctx.Done():
+		return ai.EmbeddingResult{}, ctx.Err()
+	}
+	out := ai.EmbeddingResult{}
+	for range texts {
+		out.Vectors = append(out.Vectors, []float32{1, 0})
+	}
+	return out, nil
+}
+func (*concurrentEmbedding) Dimensions() int { return 2 }
+func (*concurrentEmbedding) Status() ai.ProviderStatus {
+	return ai.ProviderStatus{Configured: true, Provider: "test", Model: "test-concurrent"}
+}
+func TestConcurrentFirstIndexIsIdempotent(t *testing.T) {
+	p := &concurrentEmbedding{ready: make(chan struct{}, 2), release: make(chan struct{})}
+	e, db := newEngine(t, &ai.Providers{Embedding: p})
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if _, err := e.EnsureVectorIndex(ctx); err != nil {
+		t.Fatal(err)
+	}
+	result := make(chan error, 2)
+	for range 2 {
+		go func() {
+			_, err := e.IndexManualDocument(ctx, ManualDoc{Source: "same-source", Title: "Concurrent index", Text: "Same source indexed by two jobs"})
+			result <- err
+		}()
+	}
+	for range 2 {
+		select {
+		case <-p.ready:
+		case <-ctx.Done():
+			t.Fatal("workers did not reach embedding outside transaction")
+		}
+	}
+	close(p.release)
+	for range 2 {
+		if err := <-result; err != nil {
+			t.Fatal(err)
+		}
+	}
+	var n int
+	if err := db.QueryRow(`SELECT count(*) FROM rag_documents WHERE source_id='same-source'`).Scan(&n); err != nil || n != 1 {
+		t.Fatalf("documents %d %v", n, err)
+	}
+	if err := db.QueryRow(`SELECT count(*) FROM rag_document_chunks`).Scan(&n); err != nil || n != 1 {
+		t.Fatalf("chunks %d %v", n, err)
+	}
+}

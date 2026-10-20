@@ -92,3 +92,19 @@ RSS items and user observation text are untrusted. They (1) never enter the syst
 `rag.New(db, cfg, providers)`; `Answer(ctx, ChatRequest, Caller) (ChatAnswer, error)` (errors: `ErrEmptyQuestion`, `ErrQuestionTooLong`, `ErrRegionNotFound` -> 400/404);
 `IndexObservation`, `IndexArticle`, `IndexManualDocument`, `RemoveDocument`, `ReindexAll`, `EmbedBackfill`, `EnsureVectorIndex`, `Search`.
 `Caller{UserID, Role}` must come from the authenticated session, never from the request body.
+
+## HTTP and process wiring
+
+`internal/app/intelligence_module.go` assembles providers, RAG, RSS and the durable jobs worker.
+Authenticated `/ai/providers/status`, `/ai/chat` and `/ai/analyze-observation` use the shared session middleware.
+The RAG caller is built only from `auth.UserFrom`; client-supplied role/id fields are never trusted.
+Chat works without provider configuration through `retrieval_only`, SQL facts and cited FTS sources.
+History is limited to 20 user/assistant turns of 2000 characters; explicit dates are validated and normalized to UTC calendar days.
+Photo analysis requires owner/reviewer/admin and configured vision, then atomically queues a pending analysis and an audit entry.
+The worker writes suggestions and only advances submitted records to ai_processed, with history and audit in the same transaction.
+
+Public `/feeds` and `/feeds/articles` hide disabled sources. Admin endpoints add a URL only after SSRF-guarded RSS/Atom verification,
+or queue an asynchronous sync (empty body means all enabled sources). Feed creation and sync requests are audited atomically.
+At startup only the committed verified source list is seeded into an empty table; jobs index missing legacy/demo documents and backfill embeddings.
+`ECO_RSS_ENABLED=false` stops periodic fetches; explicit admin sync remains available. All workers stop on context cancellation.
+The optional simulation narrator shares the text provider; the simulation service still computes and validates every indicator independently.

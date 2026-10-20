@@ -46,7 +46,7 @@ Toolchain: Go 1.27.1, Flutter 3.44.6 / Dart 3.12.2, gcc. Verifiable here: backen
 ### Phase 2 — after Phase 1 merge
 - [x] B follow-up: bundled OFL fonts (Atkinson Hyperlegible Next for Turkish İ), verified Turkish glyph coverage; removed obsolete main-only counter test after merge.
 
-- [ ] D2: HTTP handlers + wiring for `/ai/*`, `/feeds*`, `/admin/feeds*`
+- [x] D2: HTTP handlers + wiring for `/ai/*`, `/feeds*`, `/admin/feeds*`; jobs/RSS lifecycle, verified-source seed, simulation narrator adapter; HTTP access/fallback/worker/RSS-to-RAG integration tests
 - [x] E2: HTTP handlers + wiring for `/simulations*`, `/environment/measurements` (merged af32b5f; backend vet + race tests passed)
 - [ ] C: Flutter observation wizard (6 steps) + **offline queue** + expert/review dashboard
 - [ ] F: Flutter AI assistant tab, Official Updates tab, Simulation tab (what-if + comparison charts), analytics charts

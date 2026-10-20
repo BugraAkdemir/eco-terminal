@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/BugraAkdemir/eco-terminal/backend/internal/audit"
 	"github.com/BugraAkdemir/eco-terminal/backend/internal/config"
 	"github.com/BugraAkdemir/eco-terminal/backend/internal/storage"
 )
@@ -201,8 +202,15 @@ type AddSourceInput struct {
 	IntervalMinutes int
 }
 
-// AddSource verifies the URL (fetch + parse) and stores the source as enabled and verified.
-func (s *Service) AddSource(ctx context.Context, in AddSourceInput) (Source, error) {
+// VerificationError distinguishes remote feed verification failures from database failures.
+type VerificationError struct{ Err error }
+
+func (e *VerificationError) Error() string { return "rss: feed verification failed: " + e.Err.Error() }
+func (e *VerificationError) Unwrap() error { return e.Err }
+
+// AddSource verifies the URL (fetch + parse), then atomically stores the source and audit entry.
+// The optional actor is supplied by the authenticated HTTP adapter; omitted means system.
+func (s *Service) AddSource(ctx context.Context, in AddSourceInput, actors ...audit.Actor) (Source, error) {
 	in.Name = SingleLine(in.Name)
 	in.Organization = SingleLine(in.Organization)
 	in.FeedURL = strings.TrimSpace(in.FeedURL)
@@ -230,16 +238,31 @@ func (s *Service) AddSource(ctx context.Context, in AddSourceInput) (Source, err
 		return Source{}, ErrDuplicateSource
 	}
 	if _, err := s.VerifyFeedURL(ctx, in.FeedURL); err != nil {
-		return Source{}, err
+		return Source{}, &VerificationError{Err: err}
 	}
 	now := storage.Time(s.now())
 	id := storage.NewID()
-	_, err := s.DB.ExecContext(ctx, `INSERT INTO rss_sources(id,name,organization,feed_url,category,enabled,interval_minutes,verified_at,created_at,updated_at)
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return Source{}, err
+	}
+	defer tx.Rollback()
+	_, err = tx.ExecContext(ctx, `INSERT INTO rss_sources(id,name,organization,feed_url,category,enabled,interval_minutes,verified_at,created_at,updated_at)
 		VALUES (?,?,?,?,?,1,?,?,?,?)`, id, in.Name, in.Organization, in.FeedURL, in.Category, interval, now, now, now)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE") {
 			return Source{}, ErrDuplicateSource
 		}
+		return Source{}, err
+	}
+	actor := audit.System
+	if len(actors) > 0 {
+		actor = actors[0]
+	}
+	if err := audit.Log(ctx, tx, audit.Entry{Actor: actor, Action: "feed.create", EntityType: "rss_source", EntityID: id, After: map[string]string{"name": in.Name, "feed_url": in.FeedURL}}); err != nil {
+		return Source{}, err
+	}
+	if err := tx.Commit(); err != nil {
 		return Source{}, err
 	}
 	return s.GetSource(ctx, id)

@@ -1,5 +1,7 @@
 package app
 
+import "github.com/BugraAkdemir/eco-terminal/backend/internal/simulation"
+
 // extensions is THE place where other agents' modules plug in. Add one line per module:
 //
 //	mods = append(mods, ai.NewModule(d))          // registers /ai/* routes (implements Module)
@@ -9,7 +11,8 @@ package app
 // A Module that also implements Worker is started/stopped automatically; do not add it twice.
 // d.DB, d.Config, d.Logger, d.Auth, d.Require(...) and d.Observations are available for wiring.
 func extensions(d Deps) (mods []Module, workers []Worker) {
-	mods = append(mods, newSimulationModule(d)) // /simulations*, /environment/measurements + climate data preparation worker
-	// Narrative hook: newSimulationModule(d, simulation.WithExplainer(textProviderAdapter)) once internal/ai provides one.
+	intelligence := newIntelligenceModule(d)
+	mods = append(mods, intelligence)
+	mods = append(mods, newSimulationModule(d, simulation.WithExplainer(simulationTextExplainer{provider: intelligence.providers.Text})))
 	return mods, workers
 }

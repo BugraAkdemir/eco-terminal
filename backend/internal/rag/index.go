@@ -379,6 +379,17 @@ func (e *Engine) upsertDocument(ctx context.Context, d docSpec, force bool) (Ind
 		return IndexResult{}, err
 	}
 	defer tx.Rollback()
+	// Embedding ran outside the write transaction. Another worker may have inserted
+	// or replaced this document meanwhile. BEGIN IMMEDIATE serializes writers;
+	// re-read the identity/hash under that lock before deciding INSERT vs UPDATE.
+	err = tx.QueryRowContext(ctx, `SELECT id, content_hash FROM rag_documents WHERE source_type=? AND source_id=?`, d.SourceType, d.SourceID).Scan(&docID, &oldHash)
+	exists = err == nil
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return IndexResult{}, err
+	}
+	if exists && oldHash == hash && !force {
+		return IndexResult{DocumentID: docID, Skipped: true}, nil
+	}
 	hasVec := e.vecTableExists(ctx)
 	if exists {
 		if err := deleteChunks(ctx, tx, docID, hasVec); err != nil {

@@ -1,11 +1,20 @@
-# Handoff — 2026-10-20 (Session 3) — Flutter birleşimi doğrulandı; D2 devam ediyor
+# Handoff — 2026-10-20 (Session 3) — Flutter doğrulaması + D2 AI/RSS HTTP entegrasyonu
 ## Summary
-Dört eski ajan branch'inin `main..branch` çıktısı boş; tamamı zaten main'e alınmış. Flutter temeli yeniden doğrulandı, fontlar gömüldü, eski sayaç testi kaldırıldı. **Commit status:** bu kayıtla birlikte Flutter checkpoint commit'i; D2 henüz yapılmadı.
+Dört eski ajan branch'inin `main..branch` çıktısı boş; tamamı zaten main'e alınmış. Flutter temeli yeniden doğrulandı, fontlar gömüldü, eski sayaç testi kaldırıldı. **Commit status:** Flutter checkpoint `4161ff2`; D2 aşağıdaki değişikliklerle bu oturumun ikinci commit’inde. Push/deploy yapılmadı.
 ## What Was Done
 - Main'de merge artığı `test/widget_test.dart` artık olmayan MyApp'ı çağırıyordu; B branch'inde de bulunmayan eski şablon silindi. Gerçek uygulama shell/routing testleri korunuyor.
 - Fraunces, IBM Plex Mono ve Atkinson Hyperlegible Next orijinal fontları OFL lisanslarıyla `assets/fonts/` içine gömüldü. Orijinal Atkinson U+0130 (`İ`) içermediği için Next seçildi; plan/tasarım belgesi güncellendi. SHA-256 ve kaynaklar assets/fonts/README.md içinde.
 - Native Linux uygulaması geçici demo DB kullanan gerçek API ile 1400/900/400 px genişliklerinde görüntülendi. Ekranlar `/tmp/eco-terminal-session3/native-{1400,900,400}.png`. Xvfb'de engine environment switches ile software rendering gerekli; normal deneme siyah görüntü veriyordu. Bu bir ürün düzeltmesi değil, QA ortamı ayarıdır.
 - Plan.md B/E2 kutuları gerçek merge ve doğrulama durumuna getirildi.
+### D2 checkpoint
+- `backend/internal/app/intelligence_{module,http}.go`: oturum gerektiren `/ai/providers/status`, `/ai/chat`, `/ai/analyze-observation`; public `/feeds`, `/feeds/articles`; admin `/admin/feeds`, `/admin/feeds/sync`.
+- RAG caller yalnızca auth.UserFrom'dan. History rol/uzunluk ve tarih doğrulaması var; anahtarsız chat retrieval_only + SQL facts ile çalışıyor. Analiz isteği sahip/reviewer/admin kontrolünden sonra pending kayıt + job + audit'i tek transaction'da yazıyor.
+- Jobs worker ve RSS scheduler uygulamanın Start/Stop yaşam döngüsünde. Doğrulanmış seed: toplam 10, etkin/public 9 kaynak (bir kaynak seed'de kasıtlı devre dışı). Eksik demo/eski RAG belgeleri başlangıçta kuyruklanıyor. Simulation Explainer text provider'a bağlandı.
+- RSS kaynak oluşturma audit ile atomik; doğrulama hataları istemciye kontrollü 400 döner. SSRF koruması etkin. RSS kapalıysa zamanlayıcı veri çekmez; açık admin sync ayrıca kullanılabilir.
+- Canlı başlangıçta iki indeks işçisi aynı yeni belge için UNIQUE hatası verdi. Kök neden: varlık kontrolü embedding'den önceydi, transaction içinde eski karara güveniliyordu. BEGIN IMMEDIATE sonrasında kimlik/hash yeniden okunarak düzeltildi. Regresyon testi iki işçiyi embedding aşamasında buluşturuyor.
+- AI job durum geçişine eksik audit kaydı eklendi (aynı transaction). AGENTS.md'de iki bulgu kapalı kayıt olarak tutuldu.
+- Yeni testler: HTTP caller erişim filtresi/role spoof/no-key fallback/analiz yetkisi; feed filtreleri/devre dışı kaynak/SSRF/admin job/audit; gerçek worker ile fake-provider görsel analiz; RSS ekleme→queue→article→RAG kaynaklı yanıt ve audit başarısızlığında rollback.
+
 ## Verification
 ```text
 cd backend && make vet && make test
@@ -32,11 +41,35 @@ PASS: e2e flow ok (ET-2026-000026, observation e846048c-026a-443e-813d-8e302a14c
 fc-query --format=%{charset} <each bundled ttf>
 All 8 binaries: ğĞşŞıİöÖçÇüÜ PASS
 ```
+D2 son doğrulama (son kod üzerinde):
+```text
+cd backend && make vet && make test
+go vet -tags "sqlite_fts5 sqlite_rtree" ./...
+go test -tags "sqlite_fts5 sqlite_rtree" -race ./...
+ok .../internal/app 1.050s
+ok .../internal/jobs 1.358s
+ok .../internal/rag 1.391s
+ok .../internal/rss (cached)
+ok .../tests 12.555s
+# Diğer paketler ok / [no test files], exit 0.
+
+cd backend && make build
+go build -tags "sqlite_fts5 sqlite_rtree" -o bin/server ./cmd/server
+
+# Son binary + ayrı geçici DB + localhost:18081, canlı doğrulama:
+./scripts/e2e.sh
+PASS: e2e flow ok (ET-2026-000027, observation ec6fc39d-f148-476d-a0e0-705fe122b46a)
+PASS: live authenticated chat returns SQL facts without AI key
+PASS: 10 verified sources seeded; 9 enabled sources public
+PASS: no duplicate-document startup errors
+```
+İlk ek canlı doğrulamada test harness'i public listede yanlışlıkla 10 bekledi; seed'de 1 disabled bulundu, beklenen değer seed'den hesaplanarak düzeltildi ve son akış geçti. Gerçek uzak AI sağlayıcısı ve canlı RSS ağı bu oturumda denenmedi; provider/RSS fixture'ları ve gerçek SQLite/HTTP/worker entegrasyonu test edildi.
+
 TestSprite bağlı değil (`git ls-files '*testsprite*'` boş); yeni servis kurulmadı. Android/iOS/Windows/macOS/web doğrulanmadı. Native QA günlüğünde headless ATK/portal uyarıları var; ekranlarda uygulama görünür, işlev testleri geçti.
 ## Next Session
-1. D2: AI/RSS HTTP handler'ları, jobs ve RSS worker wiring; caller yalnız auth.UserFrom'dan.
-2. Ardından C: gözlem sihirbazı + offline queue + uzman paneli, F: AI/duyuru/simülasyon ekranları.
-3. Faz 3 entegrasyon, belgeler ve nihai doğrulama. Push/deploy yapılmadı; açık kullanıcı talebi olmadan yapılmayacak.
+1. C: `apps/flutter_app/lib/features/observations/` altında 6 adımlı gözlem sihirbazı, kalıcı fotoğraf/taslak saklama, kullanıcıya bağlı offline kuyruk + retry/backoff + `client_ref`, uzman paneli. Flutter `ObservationCreate` modeli henüz client_ref içermiyor; sözleşme/backend zaten destekliyor, model önce genişletilmeli. Eklentiler `app_extensions.dart` üzerinden.
+2. F: AI Asistan / Resmî Duyurular / Simülasyon sekmeleri ve grafikler. API istemcileri hazır; backend endpoint'leri artık bağlı. Seçili bölge shared provider'dan, AI suggestion etiketleri ve Open-Meteo atfı korunmalı.
+3. Faz 3 entegrasyon, belgeler ve nihai doğrulama. Eski branch'leri tekrar merge etme: hepsi main'de. Yeni C/F işi eski foundation branch'inden değil güncel main'den ilerlemeli. Push/deploy yapılmadı; açık kullanıcı talebi olmadan yapılmayacak.
 
 ---
 

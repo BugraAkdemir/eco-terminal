@@ -97,8 +97,13 @@ Henüz release süreci tanımlı değil.
 
 ### Flutter foundation (`apps/flutter_app/`)
 
-- ~~Flutter merge sonrası `flutter analyze` hata veriyordu: main'de kalan şablon `test/widget_test.dart`, B branch'inde bulunmayan ve artık var olmayan `MyApp` sayaç uygulamasını çağırıyordu.~~ → fixed 2026-10-20 (bu oturumun Flutter doğrulama commit’i): eski şablon kaldırıldı; gerçek uygulamanın açılışı ve responsive kabuğu `shell_test.dart` kapsamında doğrulanıyor.
-- ~~Atkinson Hyperlegible'ın ilk sürümünde U+0130 (`İ`) yok; gövde metninde Türkçe büyük İ sistem fontuna düşüyordu.~~ → fixed 2026-10-20 (bu oturumun font commit’i): tüm Türkçe glifleri içeren Atkinson Hyperlegible Next, Fraunces ve IBM Plex Mono lisanslarıyla gömüldü; font dosyaları değiştirilmedi.
+- ~~Flutter merge sonrası `flutter analyze` hata veriyordu: main'de kalan şablon `test/widget_test.dart`, B branch'inde bulunmayan ve artık var olmayan `MyApp` sayaç uygulamasını çağırıyordu.~~ → fixed 2026-10-20 (`4161ff2`): eski şablon kaldırıldı; gerçek uygulamanın açılışı ve responsive kabuğu `shell_test.dart` kapsamında doğrulanıyor.
+- ~~Atkinson Hyperlegible'ın ilk sürümünde U+0130 (`İ`) yok; gövde metninde Türkçe büyük İ sistem fontuna düşüyordu.~~ → fixed 2026-10-20 (`4161ff2`): tüm Türkçe glifleri içeren Atkinson Hyperlegible Next, Fraunces ve IBM Plex Mono lisanslarıyla gömüldü; font dosyaları değiştirilmedi.
+
+### Intelligence worker (`backend/internal/rag/`, `jobs/`)
+
+- ~~İki job aynı kaydı ilk kez indekslerken `UNIQUE constraint failed: rag_documents.source_type, rag_documents.source_id` hatası ve gereksiz retry oluşuyordu: `upsertDocument` belge varlığını embedding öncesinde okuyup transaction içinde tekrar kontrol etmiyordu.~~ → fixed 2026-10-20 (D2 commit’i): BEGIN IMMEDIATE sonrasında belge kimliği/hash yeniden okunuyor; embedding ağ çağrısı transaction dışında kalıyor. İki işçiyi embedding aşamasında buluşturan regresyon testi var.
+- ~~AI işçisinin submitted → ai_processed geçişi history yazmasına rağmen audit_logs kaydı oluşturmuyordu.~~ → fixed 2026-10-20 (D2 commit’i): analiz sonucu ve durum geçişinin audit kaydı aynı transaction'a alındı.
 
 ---
 

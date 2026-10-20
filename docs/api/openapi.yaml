@@ -319,19 +319,23 @@ paths:
               type: object
               required: [message]
               properties:
-                message: {type: string, maxLength: 2000}
+                message: {type: string, minLength: 1, maxLength: 2000}
                 region_id: {type: string}
                 from: {type: string}
                 to: {type: string}
                 history:
                   type: array
+                  maxItems: 20
                   items:
                     type: object
                     properties:
                       role: {type: string, enum: [user, assistant]}
-                      content: {type: string}
+                      content: {type: string, maxLength: 2000}
       responses:
         '200': {description: OK, content: {application/json: {schema: {type: object, properties: {data: {$ref: '#/components/schemas/ChatAnswer'}}}}}}
+        '400': {$ref: '#/components/responses/Error'}
+        '401': {$ref: '#/components/responses/Error'}
+        '404': {$ref: '#/components/responses/Error'}
   /ai/analyze-observation:
     post:
       tags: [ai]
@@ -398,6 +402,7 @@ paths:
     post:
       tags: [admin]
       summary: Trigger an immediate sync (optionally one source). Runs async; returns job info.
+      description: An omitted body or source_id queues all enabled sources. Unknown source_id returns 404.
       requestBody:
         content:
           application/json:
@@ -813,6 +818,7 @@ components:
         feed_url: {type: string}
         category: {type: string}
         enabled: {type: boolean}
+        interval_minutes: {type: integer, minimum: 5}
         verified_at: {type: string, nullable: true}
         last_fetched_at: {type: string, nullable: true}
         last_status: {type: string}

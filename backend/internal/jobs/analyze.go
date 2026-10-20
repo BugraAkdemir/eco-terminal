@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/BugraAkdemir/eco-terminal/backend/internal/ai"
+	"github.com/BugraAkdemir/eco-terminal/backend/internal/audit"
 	"github.com/BugraAkdemir/eco-terminal/backend/internal/storage"
 )
 
@@ -238,12 +239,18 @@ func (d *Deps) finishAnalysis(ctx context.Context, analysisID, status string, s 
 			return err
 		}
 		if n, _ := res.RowsAffected(); n == 1 {
+			if err := audit.Log(ctx, tx, audit.Entry{Actor: audit.System, Action: "observation.status_change", EntityType: "observation", EntityID: obsID, Before: map[string]string{"status": "submitted"}, After: map[string]string{"status": "ai_processed"}}); err != nil {
+				return err
+			}
 			if _, err := tx.ExecContext(ctx, `INSERT INTO observation_status_history(id,observation_id,actor_id,actor_type,from_status,to_status,note,created_at)
 				VALUES (?,?,NULL,'ai','submitted','ai_processed',?,?)`, storage.NewID(), obsID,
 				"Yapay zekâ ön analizi tamamlandı (öneri; doğrulanmış değildir)", now); err != nil {
 				return err
 			}
 		}
+	}
+	if err := audit.Log(ctx, tx, audit.Entry{Actor: audit.System, Action: "observation.analysis_finished", EntityType: "observation", EntityID: obsID, After: map[string]string{"analysis_id": analysisID, "status": status}}); err != nil {
+		return err
 	}
 	return tx.Commit()
 }
